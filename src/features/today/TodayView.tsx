@@ -65,13 +65,13 @@ export function TodayView({ onOpenStagePicker, onOpenSos }: TodayViewProps) {
     <div className="space-y-5">
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-wider text-[#B5A99F]">
+          <p className="text-xs uppercase tracking-wider text-muted">
             {night ? 'Quiet Night' : 'Today'}
           </p>
-          <h1 className="mt-0.5 text-xl font-semibold text-[#F4EFEA]">{activeStage.subtitle}</h1>
-          <p className="mt-1 text-xs leading-relaxed text-[#B5A99F]">{activeStage.focusSummary}</p>
+          <h1 className="mt-0.5 text-xl font-semibold text-ink">{activeStage.subtitle}</h1>
+          <p className="mt-1 text-xs leading-relaxed text-muted">{activeStage.focusSummary}</p>
           {isBeyondContent && (
-            <p className="mt-1 text-[11px] text-[#8FA893]">
+            <p className="mt-1 text-[11px] text-sage">
               Content currently covers up to 12 months—more stages coming.
             </p>
           )}
@@ -81,14 +81,14 @@ export function TodayView({ onOpenStagePicker, onOpenSos }: TodayViewProps) {
           type="button"
           onClick={onOpenStagePicker}
           aria-label={`Baby stage: ${activeStage.label}. Change stage`}
-          className="min-h-[44px] shrink-0 rounded-full border border-[#332A24] bg-[#1E1916] px-3 py-2 text-right text-xs transition active:border-[#E09F67]"
+          className="min-h-[44px] shrink-0 rounded-full border border-line bg-surface px-3 py-2 text-right text-xs transition active:border-amber"
         >
-          <span className="block font-medium text-[#E09F67]">{activeStage.label}</span>
+          <span className="block font-medium text-amber">{activeStage.label}</span>
           {isBrowsing ? (
-            <span className="block text-[11px] text-[#B5A99F]">Browsing · tap to return</span>
+            <span className="block text-[11px] text-muted">Browsing · tap to return</span>
           ) : (
             ageInWeeks !== null && (
-              <span className="block text-[11px] text-[#B5A99F]">Week {ageInWeeks}</span>
+              <span className="block text-[11px] text-muted">Week {ageInWeeks}</span>
             )
           )}
         </button>
@@ -97,34 +97,34 @@ export function TodayView({ onOpenStagePicker, onOpenSos }: TodayViewProps) {
       {practice && (
         <section
           aria-label="Today's Practice"
-          className="space-y-4 rounded-2xl border border-[#332A24] bg-[#1E1916] p-5"
+          className="space-y-4 rounded-2xl border border-line bg-surface p-5"
         >
           <div className="flex items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#E09F67]">
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber">
               <Sparkles className="h-3.5 w-3.5" />
               Today’s Practice
             </span>
-            <span className="rounded-full bg-[#28211D] px-2.5 py-0.5 text-right text-[11px] text-[#B5A99F]">
+            <span className="rounded-full bg-elevated px-2.5 py-0.5 text-right text-[11px] text-muted">
               {FRAMEWORK_LABELS[practice.framework]}
             </span>
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-lg font-semibold leading-snug text-[#F4EFEA]">{practice.title}</h2>
-            <p className="text-sm leading-relaxed text-[#F4EFEA]/90">{practice.prompt}</p>
+            <h2 className="text-lg font-semibold leading-snug text-ink">{practice.title}</h2>
+            <p className="text-sm leading-relaxed text-ink/90">{practice.prompt}</p>
             {practice.safetyNote && (
-              <p className="flex gap-2 rounded-xl border border-[#8FA893]/30 p-3 text-xs leading-relaxed text-[#F4EFEA]/90">
-                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#8FA893]" />
+              <p className="flex gap-2 rounded-xl border border-sage/30 p-3 text-xs leading-relaxed text-ink/90">
+                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sage" />
                 <span>{practice.safetyNote}</span>
               </p>
             )}
-            <p className="rounded-xl bg-[#14110F] p-3 text-xs leading-relaxed text-[#B5A99F]">
+            <p className="rounded-xl bg-canvas p-3 text-xs leading-relaxed text-muted">
               {practice.whyItWorks}
             </p>
           </div>
 
           {practicedAnother && (
-            <p className="text-xs text-[#8FA893]">✓ You already practiced one today. This one’s a bonus.</p>
+            <p className="text-xs text-sage">✓ You already practiced one today. This one’s a bonus.</p>
           )}
 
           <div className="flex gap-2.5 pt-1">
@@ -134,8 +134,8 @@ export function TodayView({ onOpenStagePicker, onOpenSos }: TodayViewProps) {
               aria-pressed={isPracticed}
               className={`flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition active:scale-[0.99] ${
                 isPracticed
-                  ? 'border border-[#8FA893]/40 bg-[#8FA893]/15 text-[#8FA893]'
-                  : 'bg-[#E09F67] text-[#14110F]'
+                  ? 'border border-sage/40 bg-sage/15 text-sage'
+                  : 'bg-amber text-canvas'
               }`}
             >
               <Check className="h-4 w-4" />
@@ -146,7 +146,7 @@ export function TodayView({ onOpenStagePicker, onOpenSos }: TodayViewProps) {
               type="button"
               onClick={() => showAnotherPractice(dateKey)}
               aria-label="Show another practice"
-              className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-[#332A24] bg-[#28211D] px-4 text-xs font-medium text-[#B5A99F] transition active:border-[#E09F67] active:text-[#F4EFEA]"
+              className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-line bg-elevated px-4 text-xs font-medium text-muted transition active:border-amber active:text-ink"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               Another
@@ -157,9 +157,9 @@ export function TodayView({ onOpenStagePicker, onOpenSos }: TodayViewProps) {
 
       <section
         aria-label="Parent Check-In"
-        className="space-y-3 rounded-2xl border border-[#332A24] bg-[#1E1916] p-5"
+        className="space-y-3 rounded-2xl border border-line bg-surface p-5"
       >
-        <h2 className="text-sm font-medium text-[#F4EFEA]">How are you holding up right now?</h2>
+        <h2 className="text-sm font-medium text-ink">How are you holding up right now?</h2>
 
         <div className="grid grid-cols-2 gap-2">
           {MOOD_OPTIONS.map((option) => {
@@ -172,8 +172,8 @@ export function TodayView({ onOpenStagePicker, onOpenSos }: TodayViewProps) {
                 onClick={() => setMood(option.id, dateKey)}
                 className={`min-h-[48px] rounded-xl border px-3 text-sm font-medium transition active:scale-[0.99] ${
                   selected
-                    ? 'border-[#E09F67] bg-[#E09F67]/15 text-[#E09F67]'
-                    : 'border-[#332A24] bg-[#14110F] text-[#B5A99F]'
+                    ? 'border-amber bg-amber/15 text-amber'
+                    : 'border-line bg-canvas text-muted'
                 }`}
               >
                 {option.label}
@@ -183,13 +183,13 @@ export function TodayView({ onOpenStagePicker, onOpenSos }: TodayViewProps) {
         </div>
 
         {activeMoodOption && (
-          <div className="space-y-2.5 rounded-xl bg-[#14110F] p-3.5" aria-live="polite">
-            <p className="text-xs leading-relaxed text-[#F4EFEA]/90">{activeMoodOption.response}</p>
+          <div className="space-y-2.5 rounded-xl bg-canvas p-3.5" aria-live="polite">
+            <p className="text-xs leading-relaxed text-ink/90">{activeMoodOption.response}</p>
             {activeMoodOption.suggestSos && (
               <button
                 type="button"
                 onClick={() => onOpenSos('parent')}
-                className="min-h-[48px] w-full rounded-lg border border-[#E09F67]/40 bg-[#E09F67]/15 px-3 text-sm font-semibold text-[#E09F67] transition active:scale-[0.99]"
+                className="min-h-[48px] w-full rounded-lg border border-amber/40 bg-amber/15 px-3 text-sm font-semibold text-amber transition active:scale-[0.99]"
               >
                 Open Reset &amp; Repair →
               </button>

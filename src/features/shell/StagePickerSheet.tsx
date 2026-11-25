@@ -33,24 +33,24 @@ export function StagePickerSheet({ onClose }: StagePickerSheetProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="stage-picker-title"
-        className="w-full max-w-md space-y-4 rounded-t-3xl border-t border-[#332A24] bg-[#1E1916] p-5 pb-[max(2rem,env(safe-area-inset-bottom))] outline-none"
+        className="w-full max-w-md space-y-4 rounded-t-3xl border-t border-line bg-surface p-5 pb-[max(2rem,env(safe-area-inset-bottom))] outline-none"
       >
         <div className="flex items-center justify-between">
-          <h2 id="stage-picker-title" className="text-base font-semibold text-[#F4EFEA]">
+          <h2 id="stage-picker-title" className="text-base font-semibold text-ink">
             Baby’s Stage &amp; DOB
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close stage settings"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-[#28211D] text-[#B5A99F]"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-elevated text-muted"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="edit-dob" className="block text-xs text-[#B5A99F]">
+          <label htmlFor="edit-dob" className="block text-xs text-muted">
             Birth date (stage updates automatically each week)
           </label>
           <div className="flex gap-2">
@@ -60,7 +60,7 @@ export function StagePickerSheet({ onClose }: StagePickerSheetProps) {
               max={getDateKey()}
               value={dobInput}
               onChange={(e) => setDobInput(e.target.value)}
-              className="min-h-[48px] flex-1 rounded-xl border border-[#332A24] bg-[#14110F] px-3 text-base text-[#F4EFEA]"
+              className="min-h-[48px] flex-1 rounded-xl border border-line bg-canvas px-3 text-base text-ink"
             />
             <button
               type="button"
@@ -71,7 +71,7 @@ export function StagePickerSheet({ onClose }: StagePickerSheetProps) {
                   onClose();
                 }
               }}
-              className="min-h-[48px] rounded-xl bg-[#E09F67] px-4 text-sm font-semibold text-[#14110F] disabled:opacity-40"
+              className="min-h-[48px] rounded-xl bg-amber px-4 text-sm font-semibold text-canvas disabled:opacity-40"
             >
               Save
             </button>
@@ -80,7 +80,7 @@ export function StagePickerSheet({ onClose }: StagePickerSheetProps) {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#B5A99F]">Or browse a stage:</span>
+            <span className="text-xs text-muted">Or browse a stage:</span>
             {isBrowsing && (
               <button
                 type="button"
@@ -88,7 +88,7 @@ export function StagePickerSheet({ onClose }: StagePickerSheetProps) {
                   setManualStage(null);
                   onClose();
                 }}
-                className="min-h-[44px] px-2 text-xs text-[#E09F67]"
+                className="min-h-[44px] px-2 text-xs text-amber"
               >
                 Return to my baby’s stage
               </button>
@@ -109,12 +109,12 @@ export function StagePickerSheet({ onClose }: StagePickerSheetProps) {
                   }}
                   className={`min-h-[52px] rounded-xl border px-3 py-2 text-left text-xs transition ${
                     selected
-                      ? 'border-[#E09F67] bg-[#E09F67]/15 text-[#E09F67]'
-                      : 'border-[#332A24] bg-[#14110F] text-[#F4EFEA]'
+                      ? 'border-amber bg-amber/15 text-amber'
+                      : 'border-line bg-canvas text-ink'
                   }`}
                 >
                   <span className="block font-semibold">{stage.label}</span>
-                  <span className="block text-[11px] text-[#B5A99F]">{stage.subtitle}</span>
+                  <span className="block text-[11px] text-muted">{stage.subtitle}</span>
                 </button>
               );
             })}
@@ -129,7 +129,7 @@ export function StagePickerSheet({ onClose }: StagePickerSheetProps) {
               resetProfile();
             }
           }}
-          className="min-h-[44px] w-full text-xs text-[#B5A99F] underline underline-offset-4"
+          className="min-h-[44px] w-full text-xs text-muted underline underline-offset-4"
         >
           Clear my data from this device
         </button>

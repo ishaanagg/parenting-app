@@ -16,7 +16,7 @@ export function AppShell() {
   const [stagePickerOpen, setStagePickerOpen] = useState(false);
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-[#14110F] text-[#F4EFEA]">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-canvas text-ink">
       <main className="flex-1 px-5 pt-6 pb-28">
         {activeTab === 'today' ? (
           <TodayView
@@ -33,7 +33,7 @@ export function AppShell() {
       {/* Bottom Thumb-Zone Navigation */}
       <nav
         aria-label="Primary Navigation"
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-[#332A24] bg-[#14110F]/95 backdrop-blur-md"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-canvas/95 backdrop-blur-md"
       >
         <div className="mx-auto flex max-w-md items-center gap-2 px-4 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))]">
           <button
@@ -41,8 +41,8 @@ export function AppShell() {
             onClick={() => setActiveTab('today')}
             className={`flex min-h-[52px] flex-1 flex-col items-center justify-center gap-1 rounded-xl text-xs font-medium transition ${
               activeTab === 'today'
-                ? 'bg-[#28211D] text-[#E09F67]'
-                : 'text-[#B5A99F]'
+                ? 'bg-elevated text-amber'
+                : 'text-muted'
             }`}
           >
             <Sun className="h-4 w-4" />
@@ -54,8 +54,8 @@ export function AppShell() {
             onClick={() => setActiveTab('moments')}
             className={`flex min-h-[52px] flex-1 flex-col items-center justify-center gap-1 rounded-xl text-xs font-medium transition ${
               activeTab === 'moments'
-                ? 'bg-[#28211D] text-[#E09F67]'
-                : 'text-[#B5A99F]'
+                ? 'bg-elevated text-amber'
+                : 'text-muted'
             }`}
           >
             <BookOpen className="h-4 w-4" />
@@ -65,7 +65,7 @@ export function AppShell() {
           <button
             type="button"
             onClick={() => setSosState({ open: true })}
-            className="flex min-h-[52px] flex-1 flex-col items-center justify-center gap-1 rounded-xl border border-[#E09F67]/40 bg-[#E09F67]/15 text-xs font-semibold text-[#E09F67] transition active:scale-[0.98]"
+            className="flex min-h-[52px] flex-1 flex-col items-center justify-center gap-1 rounded-xl border border-amber/40 bg-amber/15 text-xs font-semibold text-amber transition active:scale-[0.98]"
           >
             <LifeBuoy className="h-4 w-4" />
             SOS

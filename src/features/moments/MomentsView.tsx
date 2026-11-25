@@ -28,10 +28,10 @@ export function MomentsView() {
   return (
     <div className="space-y-4">
       <header>
-        <p className="text-xs uppercase tracking-wider text-[#B5A99F]">
+        <p className="text-xs uppercase tracking-wider text-muted">
           Just-In-Time Wisdom · {activeStage.label}
         </p>
-        <h1 className="mt-0.5 text-xl font-semibold text-[#F4EFEA]">Moments</h1>
+        <h1 className="mt-0.5 text-xl font-semibold text-ink">Moments</h1>
       </header>
 
       <div
@@ -49,8 +49,8 @@ export function MomentsView() {
               onClick={() => setSelectedMoment(filter.id)}
               className={`min-h-[44px] shrink-0 rounded-full border px-4 text-xs font-medium transition ${
                 active
-                  ? 'border-[#E09F67] bg-[#E09F67]/15 text-[#E09F67]'
-                  : 'border-[#332A24] bg-[#1E1916] text-[#B5A99F]'
+                  ? 'border-amber bg-amber/15 text-amber'
+                  : 'border-line bg-surface text-muted'
               }`}
             >
               {filter.label}
@@ -61,20 +61,20 @@ export function MomentsView() {
 
       <div className="space-y-3">
         {cards.length === 0 ? (
-          <div className="rounded-2xl border border-[#332A24] bg-[#1E1916] p-5 text-sm text-[#B5A99F]">
+          <div className="rounded-2xl border border-line bg-surface p-5 text-sm text-muted">
             Nothing for this moment in {activeStage.label} yet. Try “All” to see everything for your
             baby’s stage.
           </div>
         ) : (
           cards.map((card) => (
-            <article key={card.id} className="space-y-3 rounded-2xl border border-[#332A24] bg-[#1E1916] p-5">
-              <span className="inline-block rounded-full bg-[#28211D] px-2.5 py-0.5 text-[11px] text-[#E09F67]">
+            <article key={card.id} className="space-y-3 rounded-2xl border border-line bg-surface p-5">
+              <span className="inline-block rounded-full bg-elevated px-2.5 py-0.5 text-[11px] text-amber">
                 {FRAMEWORK_LABELS[card.framework]}
               </span>
-              <h2 className="text-base font-semibold text-[#F4EFEA]">{card.title}</h2>
-              <p className="text-sm leading-relaxed text-[#B5A99F]">{card.insight}</p>
-              <div className="rounded-xl bg-[#14110F] p-3 text-xs leading-relaxed text-[#F4EFEA]/90">
-                <span className="font-semibold text-[#8FA893]">Try now: </span>
+              <h2 className="text-base font-semibold text-ink">{card.title}</h2>
+              <p className="text-sm leading-relaxed text-muted">{card.insight}</p>
+              <div className="rounded-xl bg-canvas p-3 text-xs leading-relaxed text-ink/90">
+                <span className="font-semibold text-sage">Try now: </span>
                 {card.tryNow}
               </div>
             </article>
