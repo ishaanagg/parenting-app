@@ -35,3 +35,17 @@ body {
 .animate-breathe {
   animation: breathePulse 10s ease-in-out infinite;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-breathe {
+    animation: none;
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

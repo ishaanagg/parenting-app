@@ -1,30 +1,64 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useAppStore } from '../../state/useAppStore';
 import { SosOverlay } from './SosOverlay';
 
 describe('SosOverlay', () => {
-  it('renders both distress paths plus safe-sleep and pediatrician reminders', () => {
-    render(<SosOverlay onClose={vi.fn()} />);
-
-    expect(
-      screen.getByText(/Baby is crying \/ 3 AM wake-up/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/I’m overwhelmed \/ triggered/i),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/Safe-Sleep Permission/i)).toBeInTheDocument();
-    expect(screen.getByText(/contact your pediatrician/i)).toBeInTheDocument();
+  beforeEach(() => {
+    useAppStore.getState().resetProfile();
+    useAppStore.getState().completeOnboardingWithStage('0-6w');
   });
 
-  it('opens La Pause timer in baby path and repair scripts in parent path', () => {
-    render(<SosOverlay onClose={vi.fn()} />);
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
-    fireEvent.click(screen.getByText(/Baby is crying \/ 3 AM wake-up/i));
+  it('shows both distress paths with safe-sleep and crisis guidance pinned', () => {
+    render(<SosOverlay onClose={vi.fn()} />);
+    expect(screen.getByText(/Baby is crying \/ 3 AM wake-up/i)).toBeInTheDocument();
+    expect(screen.getByText(/I’m overwhelmed \/ triggered/i)).toBeInTheDocument();
+    expect(screen.getByText(/clear crib or bassinet/i)).toBeInTheDocument();
+    expect(screen.getByText(/call or text 988/i)).toBeInTheDocument();
+    expect(screen.getByText(/not medical advice/i)).toBeInTheDocument();
+  });
+
+  it('parent path includes never-shake, trigger check, repair and support lines', () => {
+    render(<SosOverlay initialPath="parent" onClose={vi.fn()} />);
+    expect(screen.getByText(/Never shake a baby/i)).toBeInTheDocument();
+    expect(screen.getByText(/Trigger check/i)).toBeInTheDocument();
+    expect(screen.getByText(/Rupture & Repair/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Postpartum Support International/i })).toHaveAttribute(
+      'href',
+      'tel:18009444773',
+    );
+  });
+
+  it('La Pause timer counts down by wall clock and restarts after completion', () => {
+    vi.useFakeTimers();
+    render(<SosOverlay initialPath="baby" onClose={vi.fn()} />);
+    expect(screen.getByText(/only for grunts and stirring/i)).toBeInTheDocument();
+    expect(screen.getByText('1:00')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText(/Start La Pause/i));
+    act(() => {
+      vi.advanceTimersByTime(30_000);
+    });
+    expect(screen.getByText('0:30')).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(31_000);
+    });
+    expect(screen.getByText(/Pause complete/i)).toBeInTheDocument();
     expect(screen.getByText(/Start La Pause/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByText(/Switch path/i));
-    fireEvent.click(screen.getByText(/I’m overwhelmed \/ triggered/i));
-    expect(screen.getByText(/Your calm is the anchor/i)).toBeInTheDocument();
-    expect(screen.getByText(/Rupture & Repair/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/Start La Pause/i));
+    expect(screen.getByText('1:00')).toBeInTheDocument();
+  });
+
+  it('closes on Escape', () => {
+    const onClose = vi.fn();
+    render(<SosOverlay onClose={onClose} />);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

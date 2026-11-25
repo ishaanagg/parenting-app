@@ -74,7 +74,7 @@ export function OnboardingView() {
                 key={stage.id}
                 type="button"
                 onClick={() => completeOnboardingWithStage(stage.id)}
-                className="min-h-[40px] rounded-full border border-[#332A24] bg-[#1E1916] px-3.5 text-xs text-[#F4EFEA] transition active:border-[#E09F67]"
+                className="min-h-[44px] rounded-full border border-[#332A24] bg-[#1E1916] px-4 text-xs text-[#F4EFEA] transition active:border-[#E09F67]"
               >
                 {stage.label}
               </button>

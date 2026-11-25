@@ -8,8 +8,9 @@ export const WISDOM_CARDS: WisdomCard[] = [
     moments: ['3am', 'sleep'],
     title: 'Active sleep sounds like waking',
     insight:
-      'Young babies grunt, squirm, and even let out brief cries between sleep cycles while still asleep. Rushing in immediately can accidentally wake them.',
-    tryNow: 'Use the SOS La Pause timer for 60–120 seconds and just listen.',
+      'Young babies grunt, squirm, and even let out brief cries between sleep cycles while still asleep. Druckerman describes French parents pausing to observe rather than rushing in.',
+    tryNow:
+      'For grunts and stirring (not full crying), use the SOS La Pause timer and just listen. A hungry newborn should be fed.',
   },
   {
     id: 'w-triggers-all',
@@ -18,8 +19,19 @@ export const WISDOM_CARDS: WisdomCard[] = [
     moments: ['3am', 'triggers', 'fussy'],
     title: 'Your baby isn’t giving you a hard time',
     insight:
-      'When we’re exhausted at 3 AM, crying can feel personal. Babies aren’t manipulating us—they’re having a hard time and borrowing our nervous system.',
+      'When we’re exhausted at 3 AM, crying can feel personal. Babies aren’t manipulating us—they’re having a hard time and need to borrow our calm.',
     tryNow: 'Exhale longer than you inhale (4s in, 6s out) before you speak or lift.',
+  },
+  {
+    id: 'w-feeding-feelings-0-12w',
+    stages: ['0-6w', '6-12w'],
+    framework: 'perry',
+    moments: ['feeding', 'triggers', '3am'],
+    title: 'Feeding stirs up big feelings—notice yours',
+    insight:
+      'Breast, bottle, or both, feeds can bring up pressure about doing it “right.” Perry’s idea applies: notice your own feelings so they don’t spill into the moment. A fed, held baby is the goal.',
+    tryNow:
+      'Before the next feed, drop your shoulders and take one slow exhale. For feeding worries, talk to your pediatrician or a lactation consultant.',
   },
   {
     id: 'w-togetherness-0-6m',
@@ -32,14 +44,14 @@ export const WISDOM_CARDS: WisdomCard[] = [
     tryNow: 'Carry baby to a window or outside for 3 minutes of quiet observation.',
   },
   {
-    id: 'w-rhythm-6-12w',
+    id: 'w-cadre-frame-6w-6m',
     stages: ['6-12w', '3-6m'],
     framework: 'le-cadre',
     moments: ['sleep', 'feeding'],
-    title: 'Predictable rhythm over rigid schedules',
+    title: 'A calm frame, not a rigid schedule',
     insight:
-      'Le Cadre isn’t a military timetable. It’s a gentle, repeatable sequence—wake, feed, calm togetherness, rest—so baby knows what comes next.',
-    tryNow: 'Keep a simple 2-minute wind-down cue before naps (dim room, same phrase).',
+      'Le Cadre isn’t a military timetable. Druckerman describes a firm, calm frame—a few consistent anchors like meals, a wind-down, and bedtime—with lots of freedom inside it.',
+    tryNow: 'Pick one anchor to keep consistent today, like the same 2-minute wind-down before naps.',
   },
   {
     id: 'w-repair-all',
@@ -48,28 +60,29 @@ export const WISDOM_CARDS: WisdomCard[] = [
     moments: ['repair', 'triggers'],
     title: 'Rupture and repair beats perfection',
     insight:
-      'Every parent loses patience or snaps sometimes. What shapes your child’s attachment isn’t perfection—it’s how you reconnect afterward.',
+      'Every parent loses patience sometimes. Perry’s point: what matters most isn’t never getting it wrong—it’s noticing and reconnecting afterward.',
     tryNow: 'Say out loud: "I got overwhelmed earlier. You’re safe, and I’m here."',
   },
   {
-    id: 'w-autonomy-3-9m',
+    id: 'w-autonomy-3-12m',
     stages: ['3-6m', '6-9m', '9-12m'],
     framework: 'hgp',
-    moments: ['fussy', 'sleep'],
+    moments: ['fussy'],
     title: 'Let them wrestle with small frustrations',
     insight:
-      'When baby grunts trying to reach a toy or roll over, jumping in too fast steals their discovery. Calm presence beats constant rescuing.',
-    tryNow: 'Sit nearby silently for 30 seconds while they try before offering help.',
+      'When baby grunts trying to reach a toy or roll over, jumping in too fast takes away their discovery. Calm presence beats constant rescuing.',
+    tryNow: 'Sit nearby quietly for 30 seconds while they try before offering help.',
   },
   {
     id: 'w-food-6-12m',
     stages: ['6-9m', '9-12m'],
     framework: 'le-cadre',
     moments: ['feeding'],
-    title: 'You decide what; they decide how much',
+    title: 'Taste is learned through calm repetition',
     insight:
-      'French parents expose babies to real vegetables and bitter flavors 8–10 times without pressure. Refusal today is just information, not failure.',
-    tryNow: 'Put a tiny portion on their tray and eat yours calmly alongside them.',
+      'Druckerman describes French parents offering vegetables again and again, calmly and without pressure. A refusal today is just information, not failure.',
+    tryNow:
+      'Put a tiny, soft, finger-sized portion on their tray and eat yours calmly alongside them.',
   },
   {
     id: 'w-boundaries-6-12m',
@@ -78,7 +91,7 @@ export const WISDOM_CARDS: WisdomCard[] = [
     moments: ['fussy', 'triggers', 'repair'],
     title: 'Validate the feeling, hold the boundary',
     insight:
-      'When they cry because you took away your glasses or phone, you don’t have to give in OR scold. Both the boundary and their frustration can coexist.',
+      'When they cry because you took away your glasses or phone, you don’t have to give in or scold. The boundary and their frustration can both exist.',
     tryNow: 'Say: "You’re mad I took that away. It’s okay to be mad; I’m keeping it safe."',
   },
 ];

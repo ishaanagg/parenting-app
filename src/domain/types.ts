@@ -1,4 +1,5 @@
-export type StageId = '0-6w' | '6-12w' | '3-6m' | '6-9m' | '9-12m';
+export const STAGE_IDS = ['0-6w', '6-12w', '3-6m', '6-9m', '9-12m'] as const;
+export type StageId = (typeof STAGE_IDS)[number];
 
 export type BookFramework = 'hgp' | 'le-cadre' | 'perry';
 
@@ -10,7 +11,8 @@ export type MomentTag =
   | 'triggers'
   | 'repair';
 
-export type ParentMood = 'steady' | 'tired' | 'touched-out' | 'triggered';
+export const PARENT_MOODS = ['steady', 'tired', 'touched-out', 'triggered'] as const;
+export type ParentMood = (typeof PARENT_MOODS)[number];
 
 export interface StageDefinition {
   id: StageId;
@@ -30,6 +32,7 @@ export interface PracticeRep {
   title: string;
   prompt: string;
   whyItWorks: string;
+  safetyNote?: string;
 }
 
 export interface WisdomCard {
@@ -56,8 +59,9 @@ export interface RepairScript {
   outLoud: string;
 }
 
-export const FRAMEWORK_LABELS: Record<BookFramework, string> = {
-  hgp: 'Hunter, Gather, Parent',
-  'le-cadre': 'Bringing Up Bébé',
-  perry: 'The Book You Wish...',
-};
+export interface SupportLine {
+  id: string;
+  label: string;
+  detail: string;
+  href: string;
+}
