@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+:root {
+  --bg-base: #14110f;
+  --bg-surface: #1e1916;
+  --bg-elevated: #28211d;
+  --border-subtle: #332a24;
+  --text-primary: #f4efea;
+  --text-secondary: #b5a99f;
+  --accent-amber: #e09f67;
+  --accent-sage: #8fa893;
+}
+
+html,
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain;
+}
+
+@keyframes breathePulse {
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.55;
+  }
+  40% {
+    transform: scale(1.18);
+    opacity: 0.95;
+  }
+}
+
+.animate-breathe {
+  animation: breathePulse 10s ease-in-out infinite;
+}
