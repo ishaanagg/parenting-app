@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react';
-import { Check, Copy, Download, Moon, Sun, Sunrise, Upload, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Check, Copy, Download, History, Moon, Sun, Sunrise, Upload, X } from 'lucide-react';
 import { STAGES } from '../../content/stages';
 import { getDateKey } from '../../domain/stageEngine';
 import type { ThemePreference } from '../../domain/types';
+import { listDailyBackups, type DailyBackupSnapshot } from '../../state/dailyBackup';
 import { createBackupJson, useAppStore } from '../../state/useAppStore';
 import { useActiveStage } from '../shared/useActiveStage';
 import { useDialog } from '../shared/useDialog';
@@ -41,6 +42,19 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
     message: string;
   } | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [dailySnapshots, setDailySnapshots] = useState<DailyBackupSnapshot[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    listDailyBackups()
+      .then((items) => {
+        if (active) setDailySnapshots(items);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -275,10 +289,38 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
           <div>
             <h3 className="text-xs font-medium text-ink">Backup &amp; recovery</h3>
             <p className="mt-0.5 text-xs text-muted">
-              Your data is mirrored automatically in device storage. Save a copy before switching
-              phones or clearing browser data.
+              Anchor automatically saves a daily snapshot on first open (last 7 days kept in
+              on-device backup storage). Download a copy before switching phones.
             </p>
           </div>
+
+          {dailySnapshots.length > 0 && (
+            <div className="space-y-1.5 rounded-xl border border-line bg-canvas p-3">
+              <p className="flex items-center gap-1.5 text-xs font-medium text-sage">
+                <History className="h-3.5 w-3.5" />
+                Auto-saved daily snapshots ({dailySnapshots.length})
+              </p>
+              <div className="divide-y divide-line/60">
+                {dailySnapshots.slice(0, 4).map((snap) => (
+                  <div
+                    key={snap.dateKey}
+                    className="flex items-center justify-between gap-2 py-1.5 text-xs"
+                  >
+                    <span className="tabular-nums text-ink">
+                      {snap.dateKey === getDateKey() ? `${snap.dateKey} (Today)` : snap.dateKey}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => applyRestore(snap.backupJson)}
+                      className="min-h-[36px] rounded-lg border border-line bg-surface px-2.5 text-xs font-medium text-amber"
+                    >
+                      Restore
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-2">
             <button
