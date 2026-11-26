@@ -71,7 +71,7 @@ export function MomentsView({
             type="button"
             onClick={onOpenStagePicker}
             aria-label={`Settings and baby stage: ${activeStage.label}`}
-            className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border border-white/[0.06] bg-surface/90 px-3.5 py-2 text-xs font-medium text-amber transition active:border-amber"
+            className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border border-line bg-surface/90 px-3.5 py-2 text-xs font-medium text-amber transition active:border-amber"
           >
             <span>{babyName ? `${babyName} · ${activeStage.label}` : activeStage.label}</span>
             <SlidersHorizontal className="h-3.5 w-3.5 text-muted" />
@@ -95,7 +95,7 @@ export function MomentsView({
               className={`min-h-[44px] shrink-0 rounded-full border px-4 text-xs font-medium transition ${
                 active
                   ? 'border-amber/70 bg-amber/15 text-amber'
-                  : 'border-white/[0.06] bg-surface text-muted'
+                  : 'border-line bg-surface text-muted'
               }`}
             >
               {filter.label}
@@ -106,7 +106,7 @@ export function MomentsView({
 
       <div className="space-y-4">
         {cards.length === 0 ? (
-          <div className="rounded-3xl bg-surface p-6 text-sm text-muted ring-1 ring-white/[0.05]">
+          <div className="rounded-3xl bg-surface p-6 text-sm text-muted ring-1 ring-line">
             Nothing for this moment in {activeStage.label} yet. Try “All” to see everything for your
             baby’s stage.
           </div>
@@ -114,7 +114,7 @@ export function MomentsView({
           cards.map((card) => (
             <article
               key={card.id}
-              className="space-y-3.5 rounded-3xl bg-surface p-6 ring-1 ring-white/[0.05]"
+              className="space-y-3.5 rounded-3xl bg-surface p-6 ring-1 ring-line"
             >
               <button
                 type="button"

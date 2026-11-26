@@ -1,19 +1,47 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #110e0c;
-  --color-surface: #1b1613;
-  --color-elevated: #251f1b;
-  --color-line: #302721;
-  --color-ink: #ebe3da;
-  --color-muted: #b0a398;
-  --color-amber: #d6945c;
-  --color-sage: #8fa893;
+  --color-canvas: var(--theme-canvas);
+  --color-surface: var(--theme-surface);
+  --color-elevated: var(--theme-elevated);
+  --color-line: var(--theme-line);
+  --color-ink: var(--theme-ink);
+  --color-muted: var(--theme-muted);
+  --color-amber: var(--theme-amber);
+  --color-sage: var(--theme-sage);
+  --color-on-amber: var(--theme-on-amber);
   --font-serif: "Iowan Old Style", "Palatino Linotype", Georgia, Cambria, serif;
 }
 
-html {
+/* Night-first default (Warm Nursery Nightlight, 9 PM – 6 AM) */
+:root,
+html[data-theme="night"] {
   color-scheme: dark;
+  --theme-canvas: #110e0c;
+  --theme-surface: #1b1613;
+  --theme-elevated: #251f1b;
+  --theme-line: #302721;
+  --theme-ink: #ebe3da;
+  --theme-muted: #b0a398;
+  --theme-amber: #d6945c;
+  --theme-sage: #8fa893;
+  --theme-on-amber: #110e0c;
+  --theme-glow: rgba(214, 148, 92, 0.09);
+}
+
+/* Daytime (Warm Linen Paper, 6 AM – 9 PM) */
+html[data-theme="day"] {
+  color-scheme: light;
+  --theme-canvas: #f7f3ec;
+  --theme-surface: #fffdf9;
+  --theme-elevated: #efe8dd;
+  --theme-line: #e2d8c9;
+  --theme-ink: #241e19;
+  --theme-muted: #6e6257;
+  --theme-amber: #b86b35;
+  --theme-sage: #4f6f57;
+  --theme-on-amber: #fffdf9;
+  --theme-glow: rgba(184, 107, 53, 0.07);
 }
 
 html,
@@ -23,13 +51,13 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: contain;
+  transition: background-color 220ms ease, color 220ms ease;
 }
 
-/* Whisper-subtle warm nursery nightlight glow at top of viewport */
 .bg-nursery-glow {
   background-image: radial-gradient(
     ellipse 85% 38% at 50% -6%,
-    rgba(214, 148, 92, 0.09),
+    var(--theme-glow),
     transparent 70%
   );
 }
@@ -50,6 +78,10 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    transition: none;
+  }
   .animate-calm-in {
     animation: none;
   }

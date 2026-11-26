@@ -36,6 +36,7 @@ describe('SettingsSheet', () => {
       babyName: 'Zara',
       babyDob: '2026-09-01',
       manualStageOverride: null,
+      themePreference: 'night',
       practicedByDate: { '2026-11-25': ['rep-1'] },
       anotherCountByDate: {},
       moodByDate: {},

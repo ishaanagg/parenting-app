@@ -15,6 +15,9 @@ export type MomentTag =
 export const PARENT_MOODS = ['steady', 'tired', 'touched-out', 'triggered'] as const;
 export type ParentMood = (typeof PARENT_MOODS)[number];
 
+export const THEME_PREFERENCES = ['auto', 'day', 'night'] as const;
+export type ThemePreference = (typeof THEME_PREFERENCES)[number];
+
 export interface StageDefinition {
   id: StageId;
   label: string;

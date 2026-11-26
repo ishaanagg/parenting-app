@@ -3,14 +3,16 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import {
   PARENT_MOODS,
   STAGE_IDS,
+  THEME_PREFERENCES,
   type ParentMood,
   type StageId,
+  type ThemePreference,
 } from '../domain/types';
 import { getParentDayKey, parseIsoDate, pruneDateRecord } from '../domain/stageEngine';
 import { localStorageAdapter } from './storage';
 
 /** Bump when the persisted shape changes; add a branch in migratePersistedState. */
-export const STORE_VERSION = 3;
+export const STORE_VERSION = 4;
 export const RETENTION_DAYS = 30;
 const MAX_NAME_LENGTH = 40;
 
@@ -20,6 +22,7 @@ export interface PersistedAppState {
   babyName: string;
   babyDob: string | null;
   manualStageOverride: StageId | null;
+  themePreference: ThemePreference;
   /** parentDayKey -> practice ids marked practiced */
   practicedByDate: Record<string, string[]>;
   /** parentDayKey -> how many times "Another" was tapped */
@@ -40,6 +43,7 @@ export interface AppActions {
   setBabyName: (name: string) => void;
   setBabyDob: (dob: string | null) => void;
   setManualStage: (stageId: StageId | null) => void;
+  setThemePreference: (pref: ThemePreference) => void;
   completeOnboardingWithStage: (stageId: StageId) => void;
   markPracticed: (practiceId: string, dateKey?: string) => void;
   togglePracticed: (practiceId: string, dateKey?: string) => void;
@@ -57,6 +61,7 @@ export const INITIAL_PERSISTED_STATE: PersistedAppState = {
   babyName: '',
   babyDob: null,
   manualStageOverride: null,
+  themePreference: 'auto',
   practicedByDate: {},
   anotherCountByDate: {},
   moodByDate: {},
@@ -69,6 +74,8 @@ const isStageId = (v: unknown): v is StageId =>
   typeof v === 'string' && (STAGE_IDS as readonly string[]).includes(v);
 const isMood = (v: unknown): v is ParentMood =>
   typeof v === 'string' && (PARENT_MOODS as readonly string[]).includes(v);
+const isThemePref = (v: unknown): v is ThemePreference =>
+  typeof v === 'string' && (THEME_PREFERENCES as readonly string[]).includes(v);
 
 function sanitizeName(v: unknown): string {
   if (typeof v !== 'string') return '';
@@ -127,6 +134,7 @@ export function migratePersistedState(raw: unknown, fromVersion: number): Persis
     babyDob:
       typeof raw.babyDob === 'string' && parseIsoDate(raw.babyDob) ? raw.babyDob : null,
     manualStageOverride: isStageId(raw.manualStageOverride) ? raw.manualStageOverride : null,
+    themePreference: isThemePref(raw.themePreference) ? raw.themePreference : 'auto',
     practicedByDate: sanitizeStringArrayRecord(raw.practicedByDate),
     anotherCountByDate,
     moodByDate: sanitizeMoodRecord(raw.moodByDate),
@@ -147,6 +155,7 @@ export function createBackupJson(state: PersistedAppState): string {
       babyName: state.babyName,
       babyDob: state.babyDob,
       manualStageOverride: state.manualStageOverride,
+      themePreference: state.themePreference,
       practicedByDate: state.practicedByDate,
       anotherCountByDate: state.anotherCountByDate,
       moodByDate: state.moodByDate,
@@ -210,6 +219,8 @@ export const useAppStore = create<AppStore>()(
         })),
 
       setManualStage: (stageId) => set({ manualStageOverride: stageId }),
+
+      setThemePreference: (themePreference) => set({ themePreference }),
 
       completeOnboardingWithStage: (stageId) =>
         set({ babyDob: null, manualStageOverride: stageId, hasCompletedOnboarding: true }),
@@ -283,6 +294,7 @@ export const useAppStore = create<AppStore>()(
         babyName: state.babyName,
         babyDob: state.babyDob,
         manualStageOverride: state.manualStageOverride,
+        themePreference: state.themePreference,
         practicedByDate: state.practicedByDate,
         anotherCountByDate: state.anotherCountByDate,
         moodByDate: state.moodByDate,

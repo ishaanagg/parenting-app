@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
-import { Check, Copy, Download, Upload, X } from 'lucide-react';
+import { Check, Copy, Download, Moon, Sun, Sunrise, Upload, X } from 'lucide-react';
 import { STAGES } from '../../content/stages';
 import { getDateKey } from '../../domain/stageEngine';
+import type { ThemePreference } from '../../domain/types';
 import { createBackupJson, useAppStore } from '../../state/useAppStore';
 import { useActiveStage } from '../shared/useActiveStage';
 import { useDialog } from '../shared/useDialog';
@@ -15,10 +16,12 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
   const parentName = useAppStore((s) => s.parentName);
   const babyName = useAppStore((s) => s.babyName);
   const babyDob = useAppStore((s) => s.babyDob);
+  const themePreference = useAppStore((s) => s.themePreference);
   const setParentName = useAppStore((s) => s.setParentName);
   const setBabyName = useAppStore((s) => s.setBabyName);
   const setBabyDob = useAppStore((s) => s.setBabyDob);
   const setManualStage = useAppStore((s) => s.setManualStage);
+  const setThemePreference = useAppStore((s) => s.setThemePreference);
   const restoreFromBackup = useAppStore((s) => s.restoreFromBackup);
   const resetProfile = useAppStore((s) => s.resetProfile);
 
@@ -181,7 +184,7 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
               />
               <button
                 type="submit"
-                className="inline-flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl bg-amber px-4 text-sm font-semibold text-canvas"
+                className="inline-flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl bg-amber px-4 text-sm font-semibold text-on-amber"
               >
                 {savedNotice ? (
                   <>
@@ -227,6 +230,40 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
                 >
                   <span className="block font-semibold">{stage.label}</span>
                   <span className="block text-xs text-muted">{stage.subtitle}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Appearance: Auto / Day / Night */}
+        <div className="space-y-2 border-t border-line pt-4">
+          <span className="block text-xs font-medium text-muted">
+            Appearance (Auto switches to Night from 9 PM–6 AM)
+          </span>
+          <div role="group" aria-label="Appearance theme" className="grid grid-cols-3 gap-2">
+            {(
+              [
+                { id: 'auto', label: 'Auto', Icon: Sunrise },
+                { id: 'day', label: 'Day', Icon: Sun },
+                { id: 'night', label: 'Night', Icon: Moon },
+              ] as { id: ThemePreference; label: string; Icon: typeof Sun }[]
+            ).map(({ id, label, Icon }) => {
+              const selected = themePreference === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => setThemePreference(id)}
+                  className={`flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border text-xs font-medium transition ${
+                    selected
+                      ? 'border-amber bg-amber/15 text-amber'
+                      : 'border-line bg-canvas text-muted'
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
                 </button>
               );
             })}
@@ -308,7 +345,7 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
                 type="button"
                 disabled={!restoreText.trim()}
                 onClick={() => applyRestore(restoreText)}
-                className="min-h-[44px] w-full rounded-lg bg-amber text-xs font-semibold text-canvas disabled:opacity-40"
+                className="min-h-[44px] w-full rounded-lg bg-amber text-xs font-semibold text-on-amber disabled:opacity-40"
               >
                 Restore pasted backup
               </button>

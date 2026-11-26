@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<Props, State> {
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="min-h-[52px] rounded-xl bg-amber text-base font-semibold text-canvas"
+          className="min-h-[52px] rounded-xl bg-amber text-base font-semibold text-on-amber"
         >
           Reload Anchor
         </button>

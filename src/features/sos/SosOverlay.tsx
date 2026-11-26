@@ -136,7 +136,7 @@ function BreathingPacer() {
   const expanded = started && isInhale;
 
   return (
-    <div className="flex flex-col items-center space-y-4 rounded-3xl bg-surface p-6 text-center ring-1 ring-white/[0.05]">
+    <div className="flex flex-col items-center space-y-4 rounded-3xl bg-surface p-6 text-center ring-1 ring-line">
       <div className="relative flex h-36 w-36 items-center justify-center">
         {/* Outer luminous halo */}
         <div
@@ -255,7 +255,7 @@ export function SosOverlay({ initialPath, onClose }: SosOverlayProps) {
 
           {path === 'baby' && (
             <div className="space-y-4">
-              <div className="space-y-4 rounded-2xl bg-surface p-5 text-center ring-1 ring-white/[0.04]">
+              <div className="space-y-4 rounded-2xl bg-surface p-5 text-center ring-1 ring-line">
                 <p className="text-sm leading-relaxed text-muted">{activeStage.laPauseNote}</p>
 
                 {/* Circular Progress Ring + Countdown */}
@@ -304,7 +304,7 @@ export function SosOverlay({ initialPath, onClose }: SosOverlayProps) {
                   <button
                     type="button"
                     onClick={timer.running ? timer.pause : timer.start}
-                    className="flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-xl bg-amber px-4 text-sm font-semibold text-canvas"
+                    className="flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-xl bg-amber px-4 text-sm font-semibold text-on-amber"
                   >
                     {timer.running ? (
                       <>
@@ -349,7 +349,7 @@ export function SosOverlay({ initialPath, onClose }: SosOverlayProps) {
                 <h2 className="text-xs font-medium uppercase tracking-wider text-muted">
                   What might this cry be communicating?
                 </h2>
-                <div className="divide-y divide-line/70 rounded-2xl bg-surface px-4 ring-1 ring-white/[0.04]">
+                <div className="divide-y divide-line/70 rounded-2xl bg-surface px-4 ring-1 ring-line">
                   {stageCues.map((cue) => (
                     <div key={cue.id} className="py-3.5">
                       <p className="text-[15px] font-medium text-ink">{cue.label}</p>
@@ -411,7 +411,7 @@ export function SosOverlay({ initialPath, onClose }: SosOverlayProps) {
                     {REPAIR_SCRIPTS.map((script) => (
                       <div
                         key={script.id}
-                        className="space-y-2.5 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.05]"
+                        className="space-y-2.5 rounded-3xl bg-surface p-5 ring-1 ring-line"
                       >
                         <p className="text-xs font-medium text-amber">{script.situation}</p>
                         <p className="border-l-2 border-amber/50 pl-3.5 font-serif text-[17px] italic leading-relaxed text-ink">
@@ -424,7 +424,7 @@ export function SosOverlay({ initialPath, onClose }: SosOverlayProps) {
                 )}
 
                 {parentTab === 'trigger' && (
-                  <div className="space-y-2.5 rounded-2xl bg-surface p-4 ring-1 ring-white/[0.04]">
+                  <div className="space-y-2.5 rounded-2xl bg-surface p-4 ring-1 ring-line">
                     <p className="flex items-center gap-2 text-xs font-semibold text-sage">
                       <Ear className="h-4 w-4" /> Once you’ve taken two slow breaths:
                     </p>

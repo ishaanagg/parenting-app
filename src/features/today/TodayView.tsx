@@ -117,7 +117,7 @@ export function TodayView({
           type="button"
           onClick={onOpenStagePicker}
           aria-label={`Settings and baby stage: ${activeStage.label}`}
-          className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border border-white/[0.06] bg-surface/90 px-3.5 py-2 text-right text-xs transition active:border-amber"
+          className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border border-line bg-surface/90 px-3.5 py-2 text-right text-xs transition active:border-amber"
         >
           <span>
             <span className="block font-medium text-amber">
@@ -149,7 +149,7 @@ export function TodayView({
             <button
               type="button"
               onClick={() => onOpenSos('baby')}
-              className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl bg-amber px-3 text-sm font-semibold text-canvas transition active:scale-[0.98]"
+              className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl bg-amber px-3 text-sm font-semibold text-on-amber transition active:scale-[0.98]"
             >
               <Moon className="h-4 w-4" />
               La Pause ({formatSeconds(activeStage.laPauseSeconds)})
@@ -157,7 +157,7 @@ export function TodayView({
             <button
               type="button"
               onClick={() => onOpenSos('parent')}
-              className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl border border-white/[0.07] bg-elevated px-3 text-sm font-medium text-ink transition active:border-amber"
+              className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl border border-line bg-elevated px-3 text-sm font-medium text-ink transition active:border-amber"
             >
               <HeartHandshake className="h-4 w-4 text-sage" />
               Breathe
@@ -170,7 +170,7 @@ export function TodayView({
       {practice && (
         <section
           aria-label="Today's Practice"
-          className="space-y-5 rounded-3xl bg-surface p-6 ring-1 ring-white/[0.05]"
+          className="space-y-5 rounded-3xl bg-surface p-6 ring-1 ring-line"
         >
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs tracking-widest uppercase text-amber">
@@ -227,7 +227,7 @@ export function TodayView({
               className={`flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold transition active:scale-[0.98] ${
                 isPracticed
                   ? 'border border-sage/40 bg-sage/15 text-sage'
-                  : 'bg-amber text-canvas'
+                  : 'bg-amber text-on-amber'
               }`}
             >
               <Check className="h-4 w-4" />
@@ -241,7 +241,7 @@ export function TodayView({
                 showAnotherPractice(dateKey);
               }}
               aria-label="Show another practice"
-              className="flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl border border-white/[0.06] bg-elevated px-4 text-xs font-medium text-muted transition active:border-amber active:text-ink"
+              className="flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl border border-line bg-elevated px-4 text-xs font-medium text-muted transition active:border-amber active:text-ink"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               <span>Another</span>
@@ -264,7 +264,7 @@ export function TodayView({
       {/* Block 2: 1-Tap Parent Check-In */}
       <section
         aria-label="Parent Check-In"
-        className="space-y-4 rounded-3xl bg-surface p-6 ring-1 ring-white/[0.05]"
+        className="space-y-4 rounded-3xl bg-surface p-6 ring-1 ring-line"
       >
         <h2 className="font-serif text-lg font-normal text-ink">
           How are you holding up right now?
@@ -282,7 +282,7 @@ export function TodayView({
                 className={`min-h-[48px] rounded-2xl border px-3 text-sm font-medium transition active:scale-[0.98] ${
                   selected
                     ? 'border-amber/70 bg-amber/15 text-amber'
-                    : 'border-white/[0.06] bg-canvas/70 text-muted'
+                    : 'border-line bg-canvas/70 text-muted'
                 }`}
               >
                 {option.label}

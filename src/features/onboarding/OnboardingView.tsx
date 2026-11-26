@@ -25,7 +25,7 @@ export function OnboardingView({ onOpenSos }: OnboardingViewProps) {
     <main className="bg-nursery-glow mx-auto flex min-h-dvh max-w-md flex-col justify-between gap-8 px-5 pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-2">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-surface px-3 py-1 text-xs tracking-wide text-amber">
+          <div className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs tracking-wide text-amber">
             Anchor
           </div>
           {onOpenSos && (
@@ -53,7 +53,7 @@ export function OnboardingView({ onOpenSos }: OnboardingViewProps) {
       <div className="space-y-6">
         <form
           onSubmit={handleDobSubmit}
-          className="space-y-4 rounded-2xl bg-surface p-5 ring-1 ring-white/[0.04]"
+          className="space-y-4 rounded-2xl bg-surface p-5 ring-1 ring-line"
         >
           <label htmlFor="baby-dob" className="block text-[15px] font-medium text-ink">
             When was your baby born?
@@ -72,7 +72,7 @@ export function OnboardingView({ onOpenSos }: OnboardingViewProps) {
           <button
             type="submit"
             disabled={!dob}
-            className="min-h-[52px] w-full rounded-xl bg-amber px-4 text-base font-semibold text-canvas transition active:scale-[0.99] disabled:opacity-40"
+            className="min-h-[52px] w-full rounded-xl bg-amber px-4 text-base font-semibold text-on-amber transition active:scale-[0.99] disabled:opacity-40"
           >
             Start with my baby’s stage
           </button>
