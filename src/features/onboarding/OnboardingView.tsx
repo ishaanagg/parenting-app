@@ -1,9 +1,14 @@
 import { useState } from 'react';
+import { LifeBuoy } from 'lucide-react';
 import { STAGES } from '../../content/stages';
 import { getDateKey } from '../../domain/stageEngine';
 import { useAppStore } from '../../state/useAppStore';
 
-export function OnboardingView() {
+interface OnboardingViewProps {
+  onOpenSos?: () => void;
+}
+
+export function OnboardingView({ onOpenSos }: OnboardingViewProps) {
   const setBabyDob = useAppStore((s) => s.setBabyDob);
   const completeOnboardingWithStage = useAppStore(
     (s) => s.completeOnboardingWithStage,
@@ -17,35 +22,44 @@ export function OnboardingView() {
   };
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-between px-5 py-10">
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-between gap-8 px-5 pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
       <div className="space-y-4">
-        <div className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs text-amber">
-          Anchor · Night-First Co-Pilot
+        <div className="flex items-center justify-between gap-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs text-amber">
+            Anchor
+          </div>
+          {onOpenSos && (
+            <button
+              type="button"
+              onClick={onOpenSos}
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-amber/40 bg-amber/15 px-3.5 text-xs font-semibold text-amber"
+            >
+              <LifeBuoy className="h-3.5 w-3.5" />
+              Need help right now?
+            </button>
+          )}
         </div>
+
         <h1 className="text-2xl font-semibold tracking-tight text-ink">
-          Calm daily practice, and steady help at 3 AM.
+          A steady breath for the hard moments, and one calm practice a day.
         </h1>
-        <p className="text-sm leading-relaxed text-muted">
-          Built around <span className="text-ink">Hunter, Gather, Parent</span>,{' '}
+        <p className="text-[15px] leading-relaxed text-muted">
+          Stage-aware guidance drawn from <span className="text-ink">Hunter, Gather, Parent</span>,{' '}
           <span className="text-ink">Bringing Up Bébé</span>, and{' '}
-          <span className="text-ink">The Book You Wish Your Parents Had Read</span>.
-          Everything stays private on your device.
+          <span className="text-ink">Philippa Perry</span>. Private on your device.
         </p>
       </div>
 
-      <div className="space-y-6 pb-4">
+      <div className="space-y-6">
         <form
           onSubmit={handleDobSubmit}
-          className="space-y-4 rounded-2xl border border-line bg-surface p-5"
+          className="space-y-4 rounded-2xl bg-surface p-5 ring-1 ring-white/[0.04]"
         >
-          <label
-            htmlFor="baby-dob"
-            className="block text-sm font-medium text-ink"
-          >
+          <label htmlFor="baby-dob" className="block text-[15px] font-medium text-ink">
             When was your baby born?
           </label>
-          <p className="text-xs text-muted">
-            We use this only to surface stage-appropriate practices and La Pause timing.
+          <p className="text-sm text-muted">
+            Used only to match your baby’s stage automatically each week.
           </p>
           <input
             id="baby-dob"
@@ -64,19 +78,18 @@ export function OnboardingView() {
           </button>
         </form>
 
-        <div className="space-y-2">
-          <p className="text-center text-xs text-muted">
-            Or jump straight to a stage:
-          </p>
-          <div className="flex flex-wrap justify-center gap-2">
+        <div className="space-y-2.5">
+          <p className="text-center text-xs text-muted">Or jump straight to a stage:</p>
+          <div className="grid grid-cols-2 gap-2">
             {STAGES.map((stage) => (
               <button
                 key={stage.id}
                 type="button"
                 onClick={() => completeOnboardingWithStage(stage.id)}
-                className="min-h-[44px] rounded-full border border-line bg-surface px-4 text-xs text-ink transition active:border-amber"
+                className="min-h-[52px] rounded-xl border border-line bg-surface px-3 py-2 text-left text-xs transition active:border-amber"
               >
-                {stage.label}
+                <span className="block font-semibold text-ink">{stage.label}</span>
+                <span className="block text-xs text-muted">{stage.subtitle}</span>
               </button>
             ))}
           </div>

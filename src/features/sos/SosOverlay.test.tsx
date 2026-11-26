@@ -13,27 +13,40 @@ describe('SosOverlay', () => {
     vi.useRealTimers();
   });
 
-  it('shows both distress paths with safe-sleep and crisis guidance pinned', () => {
+  it('shows both distress paths and compact expandable safety bar', () => {
     render(<SosOverlay onClose={vi.fn()} />);
     expect(screen.getByText(/Baby is crying \/ 3 AM wake-up/i)).toBeInTheDocument();
     expect(screen.getByText(/I’m overwhelmed \/ triggered/i)).toBeInTheDocument();
-    expect(screen.getByText(/clear crib or bassinet/i)).toBeInTheDocument();
-    expect(screen.getByText(/call or text 988/i)).toBeInTheDocument();
-    expect(screen.getByText(/not medical advice/i)).toBeInTheDocument();
+    expect(screen.getByText(/Safe crib pause anytime/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText(/Safe crib pause anytime/i));
+    expect(
+      screen.getByText(/Anchor offers calm parenting support, not medical advice/i),
+    ).toBeInTheDocument();
   });
 
-  it('parent path includes never-shake, trigger check, repair and support lines', () => {
+  it('parent path shows live breathing pacer, safe sleep, and stepped tabs', () => {
     render(<SosOverlay initialPath="parent" onClose={vi.fn()} />);
+    expect(screen.getByText(/Breathe in/i)).toBeInTheDocument();
+    expect(screen.getByText(/clear crib or bassinet/i)).toBeInTheDocument();
+
+    // Repair scripts shown by default
+    expect(screen.getByText(/I got really overwhelmed just now/i)).toBeInTheDocument();
+
+    // Switch to Trigger check
+    fireEvent.click(screen.getByRole('button', { name: 'Trigger check' }));
+    expect(screen.getByText(/Once you’ve taken two slow breaths/i)).toBeInTheDocument();
+
+    // Switch to Crisis help
+    fireEvent.click(screen.getByRole('button', { name: 'Crisis help' }));
     expect(screen.getByText(/Never shake a baby/i)).toBeInTheDocument();
-    expect(screen.getByText(/Trigger check/i)).toBeInTheDocument();
-    expect(screen.getByText(/Rupture & Repair/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Postpartum Support International/i })).toHaveAttribute(
       'href',
       'tel:18009444773',
     );
   });
 
-  it('La Pause timer counts down by wall clock and restarts after completion', () => {
+  it('La Pause timer counts down, shows post-pause guide, and restarts cleanly', () => {
     vi.useFakeTimers();
     render(<SosOverlay initialPath="baby" onClose={vi.fn()} />);
     expect(screen.getByText(/only for grunts and stirring/i)).toBeInTheDocument();
@@ -48,7 +61,7 @@ describe('SosOverlay', () => {
     act(() => {
       vi.advanceTimersByTime(31_000);
     });
-    expect(screen.getByText(/Pause complete/i)).toBeInTheDocument();
+    expect(screen.getByText(/Pause complete\. Listen for 10 seconds/i)).toBeInTheDocument();
     expect(screen.getByText(/Start La Pause/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByText(/Start La Pause/i));

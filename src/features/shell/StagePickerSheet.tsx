@@ -19,6 +19,7 @@ export function StagePickerSheet({ onClose }: StagePickerSheetProps) {
   const dialogRef = useDialog<HTMLDivElement>(onClose);
 
   const [dobInput, setDobInput] = useState(babyDob ?? '');
+  const [confirmClear, setConfirmClear] = useState(false);
 
   return (
     <div
@@ -35,6 +36,8 @@ export function StagePickerSheet({ onClose }: StagePickerSheetProps) {
         aria-labelledby="stage-picker-title"
         className="w-full max-w-md space-y-4 rounded-t-3xl border-t border-line bg-surface p-5 pb-[max(2rem,env(safe-area-inset-bottom))] outline-none"
       >
+        <div className="mx-auto h-1 w-10 rounded-full bg-line" aria-hidden="true" />
+
         <div className="flex items-center justify-between">
           <h2 id="stage-picker-title" className="text-base font-semibold text-ink">
             Baby’s Stage &amp; DOB
@@ -114,25 +117,47 @@ export function StagePickerSheet({ onClose }: StagePickerSheetProps) {
                   }`}
                 >
                   <span className="block font-semibold">{stage.label}</span>
-                  <span className="block text-[11px] text-muted">{stage.subtitle}</span>
+                  <span className="block text-xs text-muted">{stage.subtitle}</span>
                 </button>
               );
             })}
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            if (window.confirm('Clear your baby’s birth date and practice history from this device?')) {
-              onClose();
-              resetProfile();
-            }
-          }}
-          className="min-h-[44px] w-full text-xs text-muted underline underline-offset-4"
-        >
-          Clear my data from this device
-        </button>
+        {!confirmClear ? (
+          <button
+            type="button"
+            onClick={() => setConfirmClear(true)}
+            className="min-h-[44px] w-full text-xs text-muted underline underline-offset-4"
+          >
+            Clear my data from this device
+          </button>
+        ) : (
+          <div className="space-y-2 rounded-xl border border-line bg-canvas p-3.5 text-center">
+            <p className="text-xs text-ink">
+              Remove baby’s birth date and practice history from this device?
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmClear(false)}
+                className="min-h-[44px] flex-1 rounded-lg bg-elevated text-xs font-medium text-ink"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  resetProfile();
+                }}
+                className="min-h-[44px] flex-1 rounded-lg border border-amber/40 bg-amber/15 text-xs font-semibold text-amber"
+              >
+                Yes, clear data
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ export const WISDOM_CARDS: WisdomCard[] = [
       'Young babies grunt, squirm, and even let out brief cries between sleep cycles while still asleep. Druckerman describes French parents pausing to observe rather than rushing in.',
     tryNow:
       'For grunts and stirring (not full crying), use the SOS La Pause timer and just listen. A hungry newborn should be fed.',
+    action: 'la-pause',
   },
   {
     id: 'w-lapause-3-12m',
@@ -81,7 +82,7 @@ export const WISDOM_CARDS: WisdomCard[] = [
     id: 'w-autonomy-3-12m',
     stages: ['3-6m', '6-9m', '9-12m'],
     framework: 'hgp',
-    moments: ['fussy'],
+    moments: ['fussy', 'boundaries'],
     title: 'Let them wrestle with small frustrations',
     insight:
       'When baby grunts trying to reach a toy or roll over, jumping in too fast takes away their discovery. Calm presence beats constant rescuing.',
@@ -157,7 +158,7 @@ export const WISDOM_CARDS: WisdomCard[] = [
     id: 'w-boundaries-6-12m',
     stages: ['6-9m', '9-12m'],
     framework: 'perry',
-    moments: ['fussy', 'triggers', 'repair'],
+    moments: ['fussy', 'boundaries', 'triggers', 'repair'],
     title: 'Validate the feeling, hold the boundary',
     insight:
       'When they cry because you took away your glasses or phone, you don’t have to give in or scold. The boundary and their frustration can both exist.',

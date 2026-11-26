@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { SAFE_SLEEP_REMINDER, SOS_PINNED_LINE } from '../../content/sos';
+import { SAFE_SLEEP_REMINDER, SOS_PINNED_SUMMARY } from '../../content/sos';
 
 interface Props {
   children: ReactNode;
@@ -39,7 +39,7 @@ export class ErrorBoundary extends Component<Props, State> {
         </button>
         <div className="space-y-1.5 rounded-xl border border-sage/30 bg-surface p-3 text-xs leading-relaxed">
           <p>{SAFE_SLEEP_REMINDER}</p>
-          <p className="text-muted">{SOS_PINNED_LINE}</p>
+          <p className="text-muted">{SOS_PINNED_SUMMARY}</p>
         </div>
       </main>
     );

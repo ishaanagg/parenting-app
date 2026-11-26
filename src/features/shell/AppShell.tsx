@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { BookOpen, LifeBuoy, Sun } from 'lucide-react';
+import type { BookFramework } from '../../domain/types';
 import { MomentsView } from '../moments/MomentsView';
+import { FrameworkSheet } from '../shared/FrameworkSheet';
 import { SosOverlay } from '../sos/SosOverlay';
 import { TodayView } from '../today/TodayView';
 import { StagePickerSheet } from './StagePickerSheet';
@@ -14,19 +16,23 @@ export function AppShell() {
     initialPath?: 'baby' | 'parent';
   }>({ open: false });
   const [stagePickerOpen, setStagePickerOpen] = useState(false);
+  const [activeFramework, setActiveFramework] = useState<BookFramework | null>(null);
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-canvas text-ink">
-      <main className="flex-1 px-5 pt-6 pb-28">
+      <main className="flex-1 px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-28">
         {activeTab === 'today' ? (
           <TodayView
             onOpenStagePicker={() => setStagePickerOpen(true)}
-            onOpenSos={(initialPath) =>
-              setSosState({ open: true, initialPath })
-            }
+            onOpenSos={(initialPath) => setSosState({ open: true, initialPath })}
+            onOpenFramework={setActiveFramework}
           />
         ) : (
-          <MomentsView />
+          <MomentsView
+            onOpenStagePicker={() => setStagePickerOpen(true)}
+            onOpenSos={(initialPath) => setSosState({ open: true, initialPath })}
+            onOpenFramework={setActiveFramework}
+          />
         )}
       </main>
 
@@ -40,9 +46,7 @@ export function AppShell() {
             type="button"
             onClick={() => setActiveTab('today')}
             className={`flex min-h-[52px] flex-1 flex-col items-center justify-center gap-1 rounded-xl text-xs font-medium transition ${
-              activeTab === 'today'
-                ? 'bg-elevated text-amber'
-                : 'text-muted'
+              activeTab === 'today' ? 'bg-elevated text-amber' : 'text-muted'
             }`}
           >
             <Sun className="h-4 w-4" />
@@ -53,9 +57,7 @@ export function AppShell() {
             type="button"
             onClick={() => setActiveTab('moments')}
             className={`flex min-h-[52px] flex-1 flex-col items-center justify-center gap-1 rounded-xl text-xs font-medium transition ${
-              activeTab === 'moments'
-                ? 'bg-elevated text-amber'
-                : 'text-muted'
+              activeTab === 'moments' ? 'bg-elevated text-amber' : 'text-muted'
             }`}
           >
             <BookOpen className="h-4 w-4" />
@@ -75,6 +77,13 @@ export function AppShell() {
 
       {stagePickerOpen && (
         <StagePickerSheet onClose={() => setStagePickerOpen(false)} />
+      )}
+
+      {activeFramework && (
+        <FrameworkSheet
+          framework={activeFramework}
+          onClose={() => setActiveFramework(null)}
+        />
       )}
 
       {sosState.open && (

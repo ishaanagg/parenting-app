@@ -12,11 +12,19 @@ describe('TodayView', () => {
     useAppStore.getState().completeOnboardingWithStage('0-6w');
   });
 
-  it('renders on a fresh day without crashing (regression: unstable selector)', () => {
+  it('renders on a fresh day without crashing and supports undoable practiced toggle', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     render(<TodayView onOpenStagePicker={vi.fn()} onOpenSos={vi.fn()} />);
-    expect(screen.getByText(/Today’s Practice/i)).toBeInTheDocument();
     expect(screen.getByText(/How are you holding up/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText(/Mark practiced/i));
+    expect(screen.getByText(/Practiced today/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 of 5 fourth trimester practices tried recently/i)).toBeInTheDocument();
+
+    // Tapping again undoes accidental tap
+    fireEvent.click(screen.getByText(/Practiced today/i));
+    expect(screen.getByText(/Mark practiced/i)).toBeInTheDocument();
+
     expect(errorSpy).not.toHaveBeenCalled();
     errorSpy.mockRestore();
   });
@@ -26,15 +34,12 @@ describe('TodayView', () => {
     const first = getPracticeTitle();
 
     fireEvent.click(screen.getByText(/Mark practiced/i));
-    expect(screen.getByText(/Practiced today/i)).toBeInTheDocument();
-
     const another = screen.getByRole('button', { name: /Show another practice/i });
     fireEvent.click(another);
     const second = getPracticeTitle();
     expect(second).not.toBe(first);
     expect(screen.getByText(/already practiced one today/i)).toBeInTheDocument();
 
-    // Keep tapping well past the pool size: it must never get stuck.
     let previous = second;
     for (let i = 0; i < 6; i++) {
       fireEvent.click(another);
@@ -56,6 +61,6 @@ describe('TodayView', () => {
     useAppStore.getState().setBabyDob('2026-01-01');
     useAppStore.getState().setManualStage('0-6w');
     render(<TodayView onOpenStagePicker={vi.fn()} onOpenSos={vi.fn()} />);
-    expect(screen.getByText(/Browsing · tap to return/i)).toBeInTheDocument();
+    expect(screen.getByText(/Browsing · return/i)).toBeInTheDocument();
   });
 });

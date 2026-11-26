@@ -1,14 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #14110f;
-  --color-surface: #1e1916;
-  --color-elevated: #28211d;
-  --color-line: #332a24;
-  --color-ink: #f4efea;
+  --color-canvas: #110e0c;
+  --color-surface: #1c1714;
+  --color-elevated: #26201c;
+  --color-line: #322923;
+  --color-ink: #ebe3da;
   --color-muted: #b5a99f;
-  --color-amber: #e09f67;
+  --color-amber: #d6945c;
   --color-sage: #8fa893;
+}
+
+html {
+  color-scheme: dark;
 }
 
 html,
@@ -20,32 +24,15 @@ body {
   overscroll-behavior-y: contain;
 }
 
-@keyframes breathePulse {
-  0%,
-  100% {
-    transform: scale(0.85);
-    opacity: 0.55;
-  }
-  40% {
-    transform: scale(1.18);
-    opacity: 0.95;
-  }
-}
-
-.animate-breathe {
-  animation: breathePulse 10s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-breathe {
-    animation: none;
-  }
-}
-
 .no-scrollbar {
   scrollbar-width: none;
 }
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+.fade-right-mask {
+  -webkit-mask-image: linear-gradient(to right, black 86%, transparent 100%);
+  mask-image: linear-gradient(to right, black 86%, transparent 100%);
 }

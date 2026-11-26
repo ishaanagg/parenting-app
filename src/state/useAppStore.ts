@@ -30,6 +30,7 @@ export interface AppActions {
   setManualStage: (stageId: StageId | null) => void;
   completeOnboardingWithStage: (stageId: StageId) => void;
   markPracticed: (practiceId: string, dateKey?: string) => void;
+  togglePracticed: (practiceId: string, dateKey?: string) => void;
   showAnotherPractice: (dateKey?: string) => void;
   setMood: (mood: ParentMood, dateKey?: string) => void;
   resetProfile: () => void;
@@ -132,6 +133,21 @@ export const useAppStore = create<AppStore>()(
           return {
             practicedByDate: pruneDateRecord(
               { ...state.practicedByDate, [dateKey]: [...existing, practiceId] },
+              dateKey,
+              RETENTION_DAYS,
+            ),
+          };
+        }),
+
+      togglePracticed: (practiceId, dateKey = getParentDayKey()) =>
+        set((state) => {
+          const existing = state.practicedByDate[dateKey] ?? [];
+          const next = existing.includes(practiceId)
+            ? existing.filter((id) => id !== practiceId)
+            : [...existing, practiceId];
+          return {
+            practicedByDate: pruneDateRecord(
+              { ...state.practicedByDate, [dateKey]: next },
               dateKey,
               RETENTION_DAYS,
             ),

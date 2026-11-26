@@ -1,11 +1,17 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FRAMEWORK_LABELS } from '../../content/frameworks';
 import { WISDOM_CARDS } from '../../content/wisdom';
-import { filterWisdomCards } from '../../domain/stageEngine';
-import type { MomentTag } from '../../domain/types';
+import { filterWisdomCards, isNightHours } from '../../domain/stageEngine';
+import type { BookFramework, MomentTag } from '../../domain/types';
 import { useActiveStage } from '../shared/useActiveStage';
 
-const MOMENT_FILTERS: { id: MomentTag | 'all'; label: string }[] = [
+interface MomentsViewProps {
+  onOpenStagePicker?: () => void;
+  onOpenSos?: (initialPath?: 'baby' | 'parent') => void;
+  onOpenFramework?: (framework: BookFramework) => void;
+}
+
+const BASE_FILTERS: { id: MomentTag | 'all'; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: '3am', label: '3 AM' },
   { id: 'fussy', label: 'Fussy' },
@@ -15,32 +21,67 @@ const MOMENT_FILTERS: { id: MomentTag | 'all'; label: string }[] = [
   { id: 'repair', label: 'Repair' },
 ];
 
-export function MomentsView() {
+export function MomentsView({
+  onOpenStagePicker,
+  onOpenSos,
+  onOpenFramework,
+}: MomentsViewProps) {
   const { activeStage } = useActiveStage();
-  const [selectedMoment, setSelectedMoment] = useState<MomentTag | 'all'>('all');
+  const [selectedMoment, setSelectedMoment] = useState<MomentTag | 'all'>(() =>
+    isNightHours() ? '3am' : 'all',
+  );
+
+  const filters = useMemo(() => {
+    const showBoundaries = activeStage.id === '6-9m' || activeStage.id === '9-12m';
+    if (!showBoundaries) return BASE_FILTERS;
+    return [
+      ...BASE_FILTERS.slice(0, 5),
+      { id: 'boundaries' as const, label: 'Boundaries' },
+      ...BASE_FILTERS.slice(5),
+    ];
+  }, [activeStage.id]);
+
+  const effectiveMoment =
+    selectedMoment === 'boundaries' &&
+    activeStage.id !== '6-9m' &&
+    activeStage.id !== '9-12m'
+      ? 'all'
+      : selectedMoment;
 
   const cards = filterWisdomCards({
     stageId: activeStage.id,
-    moment: selectedMoment,
+    moment: effectiveMoment,
     cards: WISDOM_CARDS,
   });
 
   return (
     <div className="space-y-4">
-      <header>
-        <p className="text-xs uppercase tracking-wider text-muted">
-          Just-In-Time Wisdom · {activeStage.label}
-        </p>
-        <h1 className="mt-0.5 text-xl font-semibold text-ink">Moments</h1>
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs uppercase tracking-wider text-muted">
+            Just-In-Time Wisdom
+          </p>
+          <h1 className="mt-0.5 text-xl font-semibold text-ink">Moments</h1>
+        </div>
+        {onOpenStagePicker && (
+          <button
+            type="button"
+            onClick={onOpenStagePicker}
+            aria-label={`Baby stage: ${activeStage.label}. Change stage`}
+            className="min-h-[44px] shrink-0 rounded-full border border-line bg-surface px-3.5 py-2 text-xs font-medium text-amber transition active:border-amber"
+          >
+            {activeStage.label}
+          </button>
+        )}
       </header>
 
       <div
         role="group"
         aria-label="Filter wisdom by moment"
-        className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 pb-1"
+        className="no-scrollbar fade-right-mask -mx-5 flex gap-2 overflow-x-auto px-5 pr-10 pb-1"
       >
-        {MOMENT_FILTERS.map((filter) => {
-          const active = selectedMoment === filter.id;
+        {filters.map((filter) => {
+          const active = effectiveMoment === filter.id;
           return (
             <button
               key={filter.id}
@@ -61,21 +102,39 @@ export function MomentsView() {
 
       <div className="space-y-3">
         {cards.length === 0 ? (
-          <div className="rounded-2xl border border-line bg-surface p-5 text-sm text-muted">
+          <div className="rounded-2xl bg-surface p-5 text-sm text-muted ring-1 ring-white/[0.04]">
             Nothing for this moment in {activeStage.label} yet. Try “All” to see everything for your
             baby’s stage.
           </div>
         ) : (
           cards.map((card) => (
-            <article key={card.id} className="space-y-3 rounded-2xl border border-line bg-surface p-5">
-              <span className="inline-block rounded-full bg-elevated px-2.5 py-0.5 text-[11px] text-amber">
+            <article
+              key={card.id}
+              className="space-y-3 rounded-2xl bg-surface p-5 ring-1 ring-white/[0.04]"
+            >
+              <button
+                type="button"
+                onClick={() => onOpenFramework?.(card.framework)}
+                className="inline-block rounded-full bg-elevated px-2.5 py-1 text-xs text-amber underline decoration-amber/30 underline-offset-2"
+              >
                 {FRAMEWORK_LABELS[card.framework]}
-              </span>
+              </button>
               <h2 className="text-base font-semibold text-ink">{card.title}</h2>
-              <p className="text-sm leading-relaxed text-muted">{card.insight}</p>
-              <div className="rounded-xl bg-canvas p-3 text-xs leading-relaxed text-ink/90">
-                <span className="font-semibold text-sage">Try now: </span>
-                {card.tryNow}
+              <p className="text-[15px] leading-relaxed text-muted">{card.insight}</p>
+              <div className="space-y-2 rounded-xl bg-canvas p-3.5 text-sm leading-relaxed text-ink/95">
+                <p>
+                  <span className="font-semibold text-sage">Try now: </span>
+                  {card.tryNow}
+                </p>
+                {card.action === 'la-pause' && onOpenSos && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenSos('baby')}
+                    className="min-h-[44px] w-full rounded-lg border border-amber/40 bg-amber/15 px-3 text-xs font-semibold text-amber"
+                  >
+                    Open La Pause Timer →
+                  </button>
+                )}
               </div>
             </article>
           ))

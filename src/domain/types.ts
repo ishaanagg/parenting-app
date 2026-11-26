@@ -8,6 +8,7 @@ export type MomentTag =
   | 'fussy'
   | 'sleep'
   | 'feeding'
+  | 'boundaries'
   | 'triggers'
   | 'repair';
 
@@ -23,6 +24,15 @@ export interface StageDefinition {
   laPauseSeconds: number;
   laPauseNote: string;
   focusSummary: string;
+}
+
+export interface FrameworkGuide {
+  id: BookFramework;
+  shortLabel: string;
+  bookTitle: string;
+  author: string;
+  coreIdea: string;
+  pillars: string[];
 }
 
 export interface PracticeRep {
@@ -43,10 +53,12 @@ export interface WisdomCard {
   title: string;
   insight: string;
   tryNow: string;
+  action?: 'la-pause' | 'breathe';
 }
 
 export interface SosCryCue {
   id: string;
+  stages?: StageId[];
   label: string;
   meaning: string;
   nextStep: string;

@@ -1,18 +1,29 @@
-import { Check, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  HeartHandshake,
+  Moon,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react';
 import { FRAMEWORK_LABELS } from '../../content/frameworks';
 import { PRACTICES } from '../../content/practices';
 import { getParentDayKey, isNightHours, pickDailyPractice } from '../../domain/stageEngine';
-import type { ParentMood } from '../../domain/types';
+import type { BookFramework, ParentMood } from '../../domain/types';
 import { useAppStore } from '../../state/useAppStore';
 import { useActiveStage } from '../shared/useActiveStage';
 import { useNow } from '../shared/useNow';
+import { formatSeconds } from '../sos/SosOverlay';
 
 interface TodayViewProps {
   onOpenStagePicker: () => void;
   onOpenSos: (initialPath?: 'baby' | 'parent') => void;
+  onOpenFramework?: (framework: BookFramework) => void;
 }
 
-/** Stable empty reference: selectors must never return a fresh [] (infinite re-render). */
 const EMPTY_IDS: readonly string[] = Object.freeze([]);
 
 const MOOD_OPTIONS: {
@@ -37,18 +48,29 @@ const MOOD_OPTIONS: {
   },
 ];
 
-export function TodayView({ onOpenStagePicker, onOpenSos }: TodayViewProps) {
+export function TodayView({
+  onOpenStagePicker,
+  onOpenSos,
+  onOpenFramework,
+}: TodayViewProps) {
   const now = useNow();
   const { activeStage, ageInWeeks, isBrowsing, isBeyondContent } = useActiveStage();
   const dateKey = getParentDayKey(now);
   const night = isNightHours(now);
+  const [whyOpen, setWhyOpen] = useState(false);
 
-  const practicedToday = useAppStore((s) => s.practicedByDate[dateKey]) ?? EMPTY_IDS;
+  const practicedByDate = useAppStore((s) => s.practicedByDate);
+  const practicedToday = practicedByDate[dateKey] ?? EMPTY_IDS;
   const anotherCount = useAppStore((s) => s.anotherCountByDate[dateKey] ?? 0);
   const mood = useAppStore((s) => s.moodByDate[dateKey] ?? null);
-  const markPracticed = useAppStore((s) => s.markPracticed);
+  const togglePracticed = useAppStore((s) => s.togglePracticed);
   const showAnotherPractice = useAppStore((s) => s.showAnotherPractice);
   const setMood = useAppStore((s) => s.setMood);
+
+  const stagePractices = useMemo(
+    () => PRACTICES.filter((p) => p.stages.includes(activeStage.id)),
+    [activeStage.id],
+  );
 
   const practice = pickDailyPractice({
     stageId: activeStage.id,
@@ -56,6 +78,16 @@ export function TodayView({ onOpenStagePicker, onOpenSos }: TodayViewProps) {
     dateKey,
     offset: anotherCount,
   });
+
+  const practiceIndex = practice
+    ? stagePractices.findIndex((p) => p.id === practice.id) + 1
+    : 0;
+
+  // Quiet, streak-free count of distinct reps tried in this stage across stored history
+  const triedInStageCount = useMemo(() => {
+    const allTried = new Set(Object.values(practicedByDate).flat());
+    return stagePractices.filter((p) => allTried.has(p.id)).length;
+  }, [practicedByDate, stagePractices]);
 
   const isPracticed = practice ? practicedToday.includes(practice.id) : false;
   const practicedAnother = !isPracticed && practicedToday.length > 0;
@@ -69,9 +101,9 @@ export function TodayView({ onOpenStagePicker, onOpenSos }: TodayViewProps) {
             {night ? 'Quiet Night' : 'Today'}
           </p>
           <h1 className="mt-0.5 text-xl font-semibold text-ink">{activeStage.subtitle}</h1>
-          <p className="mt-1 text-xs leading-relaxed text-muted">{activeStage.focusSummary}</p>
+          <p className="mt-1 text-sm leading-relaxed text-muted">{activeStage.focusSummary}</p>
           {isBeyondContent && (
-            <p className="mt-1 text-[11px] text-sage">
+            <p className="mt-1 text-xs text-sage">
               Content currently covers up to 12 months—more stages coming.
             </p>
           )}
@@ -81,56 +113,107 @@ export function TodayView({ onOpenStagePicker, onOpenSos }: TodayViewProps) {
           type="button"
           onClick={onOpenStagePicker}
           aria-label={`Baby stage: ${activeStage.label}. Change stage`}
-          className="min-h-[44px] shrink-0 rounded-full border border-line bg-surface px-3 py-2 text-right text-xs transition active:border-amber"
+          className="min-h-[44px] shrink-0 rounded-full border border-line bg-surface px-3.5 py-2 text-right text-xs transition active:border-amber"
         >
           <span className="block font-medium text-amber">{activeStage.label}</span>
           {isBrowsing ? (
-            <span className="block text-[11px] text-muted">Browsing · tap to return</span>
+            <span className="block text-xs text-muted">Browsing · return</span>
           ) : (
             ageInWeeks !== null && (
-              <span className="block text-[11px] text-muted">Week {ageInWeeks}</span>
+              <span className="block text-xs text-muted">Week {ageInWeeks}</span>
             )
           )}
         </button>
       </header>
 
+      {/* Functional 3 AM Night Companion */}
+      {night && (
+        <section
+          aria-label="Night Companion"
+          className="space-y-3 rounded-2xl bg-surface p-5 ring-1 ring-amber/25"
+        >
+          <p className="flex items-center gap-2 text-xs font-medium text-amber">
+            <Moon className="h-3.5 w-3.5" />
+            Night Companion
+          </p>
+          <p className="text-[15px] leading-relaxed text-ink/95">
+            Keep lights low and voices slow. Need a quick pause or breath right now?
+          </p>
+          <div className="grid grid-cols-2 gap-2.5">
+            <button
+              type="button"
+              onClick={() => onOpenSos('baby')}
+              className="flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-amber px-3 text-sm font-semibold text-canvas transition active:scale-[0.99]"
+            >
+              <Moon className="h-4 w-4" />
+              La Pause ({formatSeconds(activeStage.laPauseSeconds)})
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenSos('parent')}
+              className="flex min-h-[52px] items-center justify-center gap-2 rounded-xl border border-line bg-elevated px-3 text-sm font-medium text-ink transition active:border-amber"
+            >
+              <HeartHandshake className="h-4 w-4 text-sage" />
+              Breathe
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* Block 1: Today's Practice */}
       {practice && (
         <section
           aria-label="Today's Practice"
-          className="space-y-4 rounded-2xl border border-line bg-surface p-5"
+          className="space-y-4 rounded-2xl bg-surface p-5 ring-1 ring-white/[0.04]"
         >
           <div className="flex items-center justify-between gap-2">
             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber">
               <Sparkles className="h-3.5 w-3.5" />
-              Today’s Practice
+              {night ? 'For when morning comes' : 'Today’s Practice'}
             </span>
-            <span className="rounded-full bg-elevated px-2.5 py-0.5 text-right text-[11px] text-muted">
+            <button
+              type="button"
+              onClick={() => onOpenFramework?.(practice.framework)}
+              className="rounded-full bg-elevated px-2.5 py-1 text-xs text-muted underline decoration-line underline-offset-2 transition active:text-ink"
+            >
               {FRAMEWORK_LABELS[practice.framework]}
-            </span>
+            </button>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <h2 className="text-lg font-semibold leading-snug text-ink">{practice.title}</h2>
-            <p className="text-sm leading-relaxed text-ink/90">{practice.prompt}</p>
+            <p className="text-[15px] leading-relaxed text-ink/95">{practice.prompt}</p>
             {practice.safetyNote && (
-              <p className="flex gap-2 rounded-xl border border-sage/30 p-3 text-xs leading-relaxed text-ink/90">
-                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sage" />
+              <p className="flex gap-2 rounded-xl border border-sage/30 p-3 text-sm leading-relaxed text-ink/90">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-sage" />
                 <span>{practice.safetyNote}</span>
               </p>
             )}
-            <p className="rounded-xl bg-canvas p-3 text-xs leading-relaxed text-muted">
-              {practice.whyItWorks}
-            </p>
+
+            <button
+              type="button"
+              aria-expanded={whyOpen}
+              onClick={() => setWhyOpen((o) => !o)}
+              className="inline-flex min-h-[36px] items-center gap-1.5 text-xs font-medium text-muted transition active:text-ink"
+            >
+              {whyOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              Why this works
+            </button>
+            {whyOpen && (
+              <p className="rounded-xl bg-canvas p-3.5 text-sm leading-relaxed text-muted">
+                {practice.whyItWorks}
+              </p>
+            )}
           </div>
 
           {practicedAnother && (
-            <p className="text-xs text-sage">✓ You already practiced one today. This one’s a bonus.</p>
+            <p className="text-sm text-sage">✓ You already practiced one today. This one’s a bonus.</p>
           )}
 
           <div className="flex gap-2.5 pt-1">
             <button
               type="button"
-              onClick={() => markPracticed(practice.id, dateKey)}
+              onClick={() => togglePracticed(practice.id, dateKey)}
               aria-pressed={isPracticed}
               className={`flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition active:scale-[0.99] ${
                 isPracticed
@@ -144,22 +227,37 @@ export function TodayView({ onOpenStagePicker, onOpenSos }: TodayViewProps) {
 
             <button
               type="button"
-              onClick={() => showAnotherPractice(dateKey)}
+              onClick={() => {
+                setWhyOpen(false);
+                showAnotherPractice(dateKey);
+              }}
               aria-label="Show another practice"
-              className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-line bg-elevated px-4 text-xs font-medium text-muted transition active:border-amber active:text-ink"
+              className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-line bg-elevated px-3.5 text-xs font-medium text-muted transition active:border-amber active:text-ink"
             >
               <RefreshCw className="h-3.5 w-3.5" />
-              Another
+              <span>Another</span>
+              {stagePractices.length > 1 && (
+                <span className="tabular-nums text-muted/80">
+                  {practiceIndex}/{stagePractices.length}
+                </span>
+              )}
             </button>
           </div>
+
+          {triedInStageCount > 0 && (
+            <p className="text-xs text-muted">
+              {triedInStageCount} of {stagePractices.length} {activeStage.subtitle.toLowerCase()} practices tried recently
+            </p>
+          )}
         </section>
       )}
 
+      {/* Block 2: 1-Tap Parent Check-In */}
       <section
         aria-label="Parent Check-In"
-        className="space-y-3 rounded-2xl border border-line bg-surface p-5"
+        className="space-y-3 rounded-2xl bg-surface p-5 ring-1 ring-white/[0.04]"
       >
-        <h2 className="text-sm font-medium text-ink">How are you holding up right now?</h2>
+        <h2 className="text-[15px] font-medium text-ink">How are you holding up right now?</h2>
 
         <div className="grid grid-cols-2 gap-2">
           {MOOD_OPTIONS.map((option) => {
@@ -184,7 +282,7 @@ export function TodayView({ onOpenStagePicker, onOpenSos }: TodayViewProps) {
 
         {activeMoodOption && (
           <div className="space-y-2.5 rounded-xl bg-canvas p-3.5" aria-live="polite">
-            <p className="text-xs leading-relaxed text-ink/90">{activeMoodOption.response}</p>
+            <p className="text-sm leading-relaxed text-ink/90">{activeMoodOption.response}</p>
             {activeMoodOption.suggestSos && (
               <button
                 type="button"
