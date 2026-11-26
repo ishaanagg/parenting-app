@@ -8,7 +8,6 @@ import {
   RefreshCw,
   ShieldCheck,
   SlidersHorizontal,
-  Sparkles,
 } from 'lucide-react';
 import { FRAMEWORK_LABELS } from '../../content/frameworks';
 import { PRACTICES } from '../../content/practices';
@@ -86,7 +85,6 @@ export function TodayView({
     ? stagePractices.findIndex((p) => p.id === practice.id) + 1
     : 0;
 
-  // Quiet, streak-free count of distinct reps tried in this stage across stored history
   const triedInStageCount = useMemo(() => {
     const allTried = new Set(Object.values(practicedByDate).flat());
     return stagePractices.filter((p) => allTried.has(p.id)).length;
@@ -97,17 +95,19 @@ export function TodayView({
   const activeMoodOption = MOOD_OPTIONS.find((m) => m.id === mood);
 
   return (
-    <div className="space-y-5">
+    <div className="animate-calm-in space-y-6">
       <header className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted">
+          <p className="text-xs tracking-widest uppercase text-muted">
             {night ? 'Quiet Night' : 'Today'}
             {parentName ? ` · ${parentName}` : ''}
           </p>
-          <h1 className="mt-0.5 text-xl font-semibold text-ink">{activeStage.subtitle}</h1>
-          <p className="mt-1 text-sm leading-relaxed text-muted">{activeStage.focusSummary}</p>
+          <h1 className="mt-1 font-serif text-2xl font-normal tracking-tight text-ink">
+            {activeStage.subtitle}
+          </h1>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted">{activeStage.focusSummary}</p>
           {isBeyondContent && (
-            <p className="mt-1 text-xs text-sage">
+            <p className="mt-1.5 text-xs text-sage">
               Content currently covers up to 12 months—more stages coming.
             </p>
           )}
@@ -117,7 +117,7 @@ export function TodayView({
           type="button"
           onClick={onOpenStagePicker}
           aria-label={`Settings and baby stage: ${activeStage.label}`}
-          className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-2 text-right text-xs transition active:border-amber"
+          className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border border-white/[0.06] bg-surface/90 px-3.5 py-2 text-right text-xs transition active:border-amber"
         >
           <span>
             <span className="block font-medium text-amber">
@@ -139,20 +139,17 @@ export function TodayView({
       {night && (
         <section
           aria-label="Night Companion"
-          className="space-y-3 rounded-2xl bg-surface p-5 ring-1 ring-amber/25"
+          className="space-y-4 rounded-3xl bg-surface p-6 ring-1 ring-amber/20"
         >
-          <p className="flex items-center gap-2 text-xs font-medium text-amber">
-            <Moon className="h-3.5 w-3.5" />
-            Night Companion
-          </p>
-          <p className="text-[15px] leading-relaxed text-ink/95">
-            Keep lights low and voices slow. Need a quick pause or breath right now?
+          <p className="text-xs tracking-widest uppercase text-amber">Night Companion</p>
+          <p className="font-serif text-lg leading-snug text-ink">
+            Lights low. Voice slow. What helps right now?
           </p>
           <div className="grid grid-cols-2 gap-2.5">
             <button
               type="button"
               onClick={() => onOpenSos('baby')}
-              className="flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-amber px-3 text-sm font-semibold text-canvas transition active:scale-[0.99]"
+              className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl bg-amber px-3 text-sm font-semibold text-canvas transition active:scale-[0.98]"
             >
               <Moon className="h-4 w-4" />
               La Pause ({formatSeconds(activeStage.laPauseSeconds)})
@@ -160,7 +157,7 @@ export function TodayView({
             <button
               type="button"
               onClick={() => onOpenSos('parent')}
-              className="flex min-h-[52px] items-center justify-center gap-2 rounded-xl border border-line bg-elevated px-3 text-sm font-medium text-ink transition active:border-amber"
+              className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl border border-white/[0.07] bg-elevated px-3 text-sm font-medium text-ink transition active:border-amber"
             >
               <HeartHandshake className="h-4 w-4 text-sage" />
               Breathe
@@ -173,29 +170,30 @@ export function TodayView({
       {practice && (
         <section
           aria-label="Today's Practice"
-          className="space-y-4 rounded-2xl bg-surface p-5 ring-1 ring-white/[0.04]"
+          className="space-y-5 rounded-3xl bg-surface p-6 ring-1 ring-white/[0.05]"
         >
           <div className="flex items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber">
-              <Sparkles className="h-3.5 w-3.5" />
-              {night ? 'For when morning comes' : 'Today’s Practice'}
+            <span className="text-xs tracking-widest uppercase text-amber">
+              {night ? 'For morning' : 'Today’s Practice'}
             </span>
             <button
               type="button"
               onClick={() => onOpenFramework?.(practice.framework)}
               className="-my-2 inline-flex min-h-[44px] items-center"
             >
-              <span className="rounded-full bg-elevated px-2.5 py-1 text-xs text-muted underline decoration-line underline-offset-2 transition active:text-ink">
+              <span className="rounded-full bg-elevated px-2.5 py-1 text-xs text-muted transition active:text-ink">
                 {FRAMEWORK_LABELS[practice.framework]}
               </span>
             </button>
           </div>
 
-          <div className="space-y-2.5">
-            <h2 className="text-lg font-semibold leading-snug text-ink">{practice.title}</h2>
-            <p className="text-[15px] leading-relaxed text-ink/95">{practice.prompt}</p>
+          <div key={practice.id} className="animate-calm-in space-y-3">
+            <h2 className="font-serif text-[22px] leading-snug font-normal text-ink">
+              {practice.title}
+            </h2>
+            <p className="text-[15px] leading-relaxed text-ink/90">{practice.prompt}</p>
             {practice.safetyNote && (
-              <p className="flex gap-2 rounded-xl border border-sage/30 p-3 text-sm leading-relaxed text-ink/90">
+              <p className="flex gap-2.5 border-l-2 border-sage/60 pl-3.5 text-sm leading-relaxed text-ink/90">
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-sage" />
                 <span>{practice.safetyNote}</span>
               </p>
@@ -211,7 +209,7 @@ export function TodayView({
               Why this works
             </button>
             {whyOpen && (
-              <p className="rounded-xl bg-canvas p-3.5 text-sm leading-relaxed text-muted">
+              <p className="border-l-2 border-line pl-3.5 text-sm leading-relaxed text-muted">
                 {practice.whyItWorks}
               </p>
             )}
@@ -226,7 +224,7 @@ export function TodayView({
               type="button"
               onClick={() => togglePracticed(practice.id, dateKey)}
               aria-pressed={isPracticed}
-              className={`flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition active:scale-[0.99] ${
+              className={`flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold transition active:scale-[0.98] ${
                 isPracticed
                   ? 'border border-sage/40 bg-sage/15 text-sage'
                   : 'bg-amber text-canvas'
@@ -243,12 +241,12 @@ export function TodayView({
                 showAnotherPractice(dateKey);
               }}
               aria-label="Show another practice"
-              className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-line bg-elevated px-3.5 text-xs font-medium text-muted transition active:border-amber active:text-ink"
+              className="flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl border border-white/[0.06] bg-elevated px-4 text-xs font-medium text-muted transition active:border-amber active:text-ink"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               <span>Another</span>
               {stagePractices.length > 1 && (
-                <span className="tabular-nums text-muted/80">
+                <span className="tabular-nums text-muted/75">
                   {practiceIndex}/{stagePractices.length}
                 </span>
               )}
@@ -256,7 +254,7 @@ export function TodayView({
           </div>
 
           {triedInStageCount > 0 && (
-            <p className="text-xs text-muted">
+            <p className="text-xs text-muted/90">
               {triedInStageCount} of {stagePractices.length} {activeStage.subtitle.toLowerCase()} practices tried recently
             </p>
           )}
@@ -266,11 +264,13 @@ export function TodayView({
       {/* Block 2: 1-Tap Parent Check-In */}
       <section
         aria-label="Parent Check-In"
-        className="space-y-3 rounded-2xl bg-surface p-5 ring-1 ring-white/[0.04]"
+        className="space-y-4 rounded-3xl bg-surface p-6 ring-1 ring-white/[0.05]"
       >
-        <h2 className="text-[15px] font-medium text-ink">How are you holding up right now?</h2>
+        <h2 className="font-serif text-lg font-normal text-ink">
+          How are you holding up right now?
+        </h2>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2.5">
           {MOOD_OPTIONS.map((option) => {
             const selected = mood === option.id;
             return (
@@ -279,10 +279,10 @@ export function TodayView({
                 type="button"
                 aria-pressed={selected}
                 onClick={() => setMood(option.id, dateKey)}
-                className={`min-h-[48px] rounded-xl border px-3 text-sm font-medium transition active:scale-[0.99] ${
+                className={`min-h-[48px] rounded-2xl border px-3 text-sm font-medium transition active:scale-[0.98] ${
                   selected
-                    ? 'border-amber bg-amber/15 text-amber'
-                    : 'border-line bg-canvas text-muted'
+                    ? 'border-amber/70 bg-amber/15 text-amber'
+                    : 'border-white/[0.06] bg-canvas/70 text-muted'
                 }`}
               >
                 {option.label}
@@ -292,13 +292,13 @@ export function TodayView({
         </div>
 
         {activeMoodOption && (
-          <div className="space-y-2.5 rounded-xl bg-canvas p-3.5" aria-live="polite">
+          <div className="animate-calm-in space-y-3 border-l-2 border-amber/50 pl-3.5" aria-live="polite">
             <p className="text-sm leading-relaxed text-ink/90">{activeMoodOption.response}</p>
             {activeMoodOption.suggestSos && (
               <button
                 type="button"
                 onClick={() => onOpenSos('parent')}
-                className="min-h-[48px] w-full rounded-lg border border-amber/40 bg-amber/15 px-3 text-sm font-semibold text-amber transition active:scale-[0.99]"
+                className="min-h-[48px] w-full rounded-2xl border border-amber/40 bg-amber/15 px-4 text-sm font-semibold text-amber transition active:scale-[0.98]"
               >
                 Open Reset &amp; Repair →
               </button>

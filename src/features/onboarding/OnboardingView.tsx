@@ -22,10 +22,10 @@ export function OnboardingView({ onOpenSos }: OnboardingViewProps) {
   };
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-between gap-8 px-5 pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
+    <main className="bg-nursery-glow mx-auto flex min-h-dvh max-w-md flex-col justify-between gap-8 px-5 pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))]">
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-2">
-          <div className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs text-amber">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-surface px-3 py-1 text-xs tracking-wide text-amber">
             Anchor
           </div>
           {onOpenSos && (
@@ -40,8 +40,8 @@ export function OnboardingView({ onOpenSos }: OnboardingViewProps) {
           )}
         </div>
 
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">
-          A steady breath for the hard moments, and one calm practice a day.
+        <h1 className="font-serif text-[28px] leading-snug font-normal tracking-tight text-ink">
+          A steady breath at 3 AM. One calm practice a day.
         </h1>
         <p className="text-[15px] leading-relaxed text-muted">
           Stage-aware guidance drawn from <span className="text-ink">Hunter, Gather, Parent</span>,{' '}

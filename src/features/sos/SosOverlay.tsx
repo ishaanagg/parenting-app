@@ -136,22 +136,30 @@ function BreathingPacer() {
   const expanded = started && isInhale;
 
   return (
-    <div className="flex flex-col items-center space-y-3 rounded-2xl bg-surface p-5 text-center ring-1 ring-white/[0.04]">
-      <div className="relative flex h-28 w-28 items-center justify-center">
+    <div className="flex flex-col items-center space-y-4 rounded-3xl bg-surface p-6 text-center ring-1 ring-white/[0.05]">
+      <div className="relative flex h-36 w-36 items-center justify-center">
+        {/* Outer luminous halo */}
         <div
           aria-hidden="true"
-          className={`absolute inset-0 rounded-full border border-sage/45 bg-sage/15 transition-[transform,opacity] ease-in-out motion-reduce:transition-none ${
+          className={`absolute inset-0 rounded-full bg-sage/10 transition-[transform,opacity] ease-in-out motion-reduce:transition-none ${
+            isInhale ? 'duration-[4000ms]' : 'duration-[6000ms]'
+          } ${expanded ? 'scale-115 opacity-90' : 'scale-80 opacity-35'}`}
+        />
+        {/* Inner tactile ring */}
+        <div
+          aria-hidden="true"
+          className={`absolute inset-3 rounded-full border border-sage/50 bg-sage/15 transition-[transform,opacity] ease-in-out motion-reduce:transition-none ${
             isInhale ? 'duration-[4000ms]' : 'duration-[6000ms]'
           } ${expanded ? 'scale-110 opacity-95' : 'scale-85 opacity-55'}`}
         />
         <div className="relative z-10 text-center">
-          <span className="block text-sm font-semibold text-sage">
+          <span className="block font-serif text-base text-sage">
             {isInhale ? 'Breathe in' : 'Breathe out'}
           </span>
-          <span className="block text-xs tabular-nums text-muted">{phaseCountdown}s</span>
+          <span className="mt-0.5 block text-xs tabular-nums text-muted">{phaseCountdown}s</span>
         </div>
       </div>
-      <p className="text-[15px] font-medium text-ink">Your calm is the anchor.</p>
+      <p className="font-serif text-lg text-ink">Your calm is the anchor.</p>
       <p className="text-sm leading-relaxed text-muted">
         A tight chest or rising anger is your nervous system asking for a pause—not a sign you’re
         failing.
@@ -190,15 +198,15 @@ export function SosOverlay({ initialPath, onClose }: SosOverlayProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="sos-title"
-      className="fixed inset-0 z-50 flex flex-col bg-canvas text-ink outline-none"
+      className="bg-nursery-glow fixed inset-0 z-50 flex flex-col bg-canvas text-ink outline-none"
     >
       <div className="mx-auto flex h-full w-full max-w-md flex-col px-5 pt-[max(1.5rem,env(safe-area-inset-top))]">
         {/* Header */}
         <div>
-          <p className="text-xs uppercase tracking-wider text-amber">
+          <p className="text-xs tracking-widest uppercase text-amber">
             Quiet Support · {activeStage.label}
           </p>
-          <h1 id="sos-title" className="mt-0.5 text-xl font-semibold text-ink">
+          <h1 id="sos-title" className="mt-1 font-serif text-2xl font-normal text-ink">
             {path === 'triage' && 'Take one slow breath.'}
             {path === 'baby' && 'La Pause · 3 AM Companion'}
             {path === 'parent' && 'Reset & Repair'}
@@ -399,14 +407,14 @@ export function SosOverlay({ initialPath, onClose }: SosOverlayProps) {
                 </div>
 
                 {parentTab === 'repair' && (
-                  <div className="space-y-2.5">
+                  <div className="space-y-3">
                     {REPAIR_SCRIPTS.map((script) => (
                       <div
                         key={script.id}
-                        className="space-y-2 rounded-2xl bg-surface p-4 ring-1 ring-white/[0.04]"
+                        className="space-y-2.5 rounded-3xl bg-surface p-5 ring-1 ring-white/[0.05]"
                       >
                         <p className="text-xs font-medium text-amber">{script.situation}</p>
-                        <p className="rounded-xl bg-canvas p-3 text-[15px] italic leading-relaxed text-ink">
+                        <p className="border-l-2 border-amber/50 pl-3.5 font-serif text-[17px] italic leading-relaxed text-ink">
                           {script.outLoud}
                         </p>
                         <p className="text-sm text-muted">{script.innerReset}</p>

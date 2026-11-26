@@ -19,7 +19,7 @@ export function AppShell() {
   const [activeFramework, setActiveFramework] = useState<BookFramework | null>(null);
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-canvas text-ink">
+    <div className="bg-nursery-glow mx-auto flex min-h-dvh max-w-md flex-col bg-canvas text-ink">
       <main className="flex-1 px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-28">
         {activeTab === 'today' ? (
           <TodayView
