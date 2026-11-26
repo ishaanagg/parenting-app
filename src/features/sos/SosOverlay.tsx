@@ -56,13 +56,21 @@ function useLaPauseTimer(totalSeconds: number, vibrateOnDone: boolean) {
 
   useEffect(() => {
     if (endsAt === null) return;
+    let cancelled = false;
     let wakeLock: { release: () => Promise<void> } | null = null;
     const nav = navigator as Navigator & {
       wakeLock?: { request: (type: 'screen') => Promise<{ release: () => Promise<void> }> };
     };
-    nav.wakeLock?.request('screen').then((lock) => {
-      wakeLock = lock;
-    }).catch(() => {});
+    nav.wakeLock
+      ?.request('screen')
+      .then((lock) => {
+        if (cancelled) {
+          lock.release().catch(() => {});
+        } else {
+          wakeLock = lock;
+        }
+      })
+      .catch(() => {});
 
     const tick = () => {
       const left = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
@@ -70,14 +78,15 @@ function useLaPauseTimer(totalSeconds: number, vibrateOnDone: boolean) {
       if (left === 0) {
         setEndsAt(null);
         setCompleted(true);
-        if (vibrateRef.current) {
-          navigator.vibrate?.([120, 80, 120]);
+        if (vibrateRef.current && typeof navigator.vibrate === 'function') {
+          navigator.vibrate([120, 80, 120]);
         }
       }
     };
     tick();
     const id = window.setInterval(tick, 250);
     return () => {
+      cancelled = true;
       window.clearInterval(id);
       wakeLock?.release().catch(() => {});
     };
@@ -109,25 +118,31 @@ function useLaPauseTimer(totalSeconds: number, vibrateOnDone: boolean) {
  */
 function BreathingPacer() {
   const [elapsedSec, setElapsedSec] = useState(0);
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
+    const raf = window.requestAnimationFrame(() => setStarted(true));
     const id = window.setInterval(() => {
       setElapsedSec((prev) => (prev + 1) % 10);
     }, 1000);
-    return () => window.clearInterval(id);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.clearInterval(id);
+    };
   }, []);
 
   const isInhale = elapsedSec < 4;
   const phaseCountdown = isInhale ? 4 - elapsedSec : 10 - elapsedSec;
+  const expanded = started && isInhale;
 
   return (
     <div className="flex flex-col items-center space-y-3 rounded-2xl bg-surface p-5 text-center ring-1 ring-white/[0.04]">
       <div className="relative flex h-28 w-28 items-center justify-center">
         <div
           aria-hidden="true"
-          className={`absolute inset-0 rounded-full border border-sage/45 bg-sage/15 transition-transform duration-1000 ease-in-out motion-reduce:transition-none ${
-            isInhale ? 'scale-110 opacity-95' : 'scale-85 opacity-55'
-          }`}
+          className={`absolute inset-0 rounded-full border border-sage/45 bg-sage/15 transition-[transform,opacity] ease-in-out motion-reduce:transition-none ${
+            isInhale ? 'duration-[4000ms]' : 'duration-[6000ms]'
+          } ${expanded ? 'scale-110 opacity-95' : 'scale-85 opacity-55'}`}
         />
         <div className="relative z-10 text-center">
           <span className="block text-sm font-semibold text-sage">
@@ -304,16 +319,20 @@ export function SosOverlay({ initialPath, onClose }: SosOverlayProps) {
                 </div>
 
                 <div className="flex items-center justify-between gap-2 pt-1 text-xs text-muted">
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={vibrateOnDone}
-                    onClick={() => setVibrateOnDone((v) => !v)}
-                    className="inline-flex min-h-[40px] items-center gap-1.5 text-xs text-muted"
-                  >
-                    <Vibrate className={`h-3.5 w-3.5 ${vibrateOnDone ? 'text-sage' : 'text-muted'}`} />
-                    Vibrate when done: <span className="text-ink">{vibrateOnDone ? 'On' : 'Off'}</span>
-                  </button>
+                  {typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function' ? (
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={vibrateOnDone}
+                      onClick={() => setVibrateOnDone((v) => !v)}
+                      className="inline-flex min-h-[44px] items-center gap-1.5 text-xs text-muted"
+                    >
+                      <Vibrate className={`h-3.5 w-3.5 ${vibrateOnDone ? 'text-sage' : 'text-muted'}`} />
+                      Vibrate when done: <span className="text-ink">{vibrateOnDone ? 'On' : 'Off'}</span>
+                    </button>
+                  ) : (
+                    <span className="text-xs text-muted">Screen stays awake while running</span>
+                  )}
                   <span className="text-right">{LA_PAUSE_ESCALATION.split('.')[0]}.</span>
                 </div>
               </div>

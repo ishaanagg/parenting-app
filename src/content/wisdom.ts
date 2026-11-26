@@ -23,6 +23,18 @@ export const WISDOM_CARDS: WisdomCard[] = [
     insight:
       'Between sleep cycles, older babies often fuss briefly while rolling or repositioning. Waiting a couple of minutes lets you hear whether they are resettling or truly calling for you.',
     tryNow: 'Listen to the pitch of the sound for 2 minutes before opening the door.',
+    action: 'la-pause',
+  },
+  {
+    id: 'w-separation-night-6-12m',
+    stages: ['6-9m', '9-12m'],
+    framework: 'perry',
+    moments: ['3am', 'sleep'],
+    title: 'Standing in the crib is a check-in, not a setback',
+    insight:
+      'Around 7–10 months, separation awareness peaks alongside new motor skills. Waking and calling out often just means "Are you still there?"—not that sleep is broken.',
+    tryNow:
+      'Offer a calm, quiet voice and a steady hand on their back for a moment before deciding whether to lift.',
   },
   {
     id: 'w-day-night-0-12w',
@@ -163,5 +175,16 @@ export const WISDOM_CARDS: WisdomCard[] = [
     insight:
       'When they cry because you took away your glasses or phone, you don’t have to give in or scold. The boundary and their frustration can both exist.',
     tryNow: 'Say: "You’re mad I took that away. It’s okay to be mad; I’m keeping it safe."',
+  },
+  {
+    id: 'w-throwing-food-6-12m',
+    stages: ['6-9m', '9-12m'],
+    framework: 'le-cadre',
+    moments: ['boundaries', 'feeding'],
+    title: 'Food on the floor means the meal is pausing',
+    insight:
+      'Dropping food is part gravity experiment, part "I’m done." Big reactions ("No! Don’t throw!") accidentally turn it into a thrilling game.',
+    tryNow:
+      'Keep your face neutral, say once "Food stays on the tray," and if it repeats, calmly end the meal without a lecture.',
   },
 ];

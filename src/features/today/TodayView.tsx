@@ -174,9 +174,11 @@ export function TodayView({
             <button
               type="button"
               onClick={() => onOpenFramework?.(practice.framework)}
-              className="rounded-full bg-elevated px-2.5 py-1 text-xs text-muted underline decoration-line underline-offset-2 transition active:text-ink"
+              className="-my-2 inline-flex min-h-[44px] items-center"
             >
-              {FRAMEWORK_LABELS[practice.framework]}
+              <span className="rounded-full bg-elevated px-2.5 py-1 text-xs text-muted underline decoration-line underline-offset-2 transition active:text-ink">
+                {FRAMEWORK_LABELS[practice.framework]}
+              </span>
             </button>
           </div>
 
@@ -194,7 +196,7 @@ export function TodayView({
               type="button"
               aria-expanded={whyOpen}
               onClick={() => setWhyOpen((o) => !o)}
-              className="inline-flex min-h-[36px] items-center gap-1.5 text-xs font-medium text-muted transition active:text-ink"
+              className="-my-1 inline-flex min-h-[44px] items-center gap-1.5 text-xs font-medium text-muted transition active:text-ink"
             >
               {whyOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
               Why this works

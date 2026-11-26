@@ -115,9 +115,11 @@ export function MomentsView({
               <button
                 type="button"
                 onClick={() => onOpenFramework?.(card.framework)}
-                className="inline-block rounded-full bg-elevated px-2.5 py-1 text-xs text-amber underline decoration-amber/30 underline-offset-2"
+                className="-my-2 inline-flex min-h-[44px] items-center"
               >
-                {FRAMEWORK_LABELS[card.framework]}
+                <span className="rounded-full bg-elevated px-2.5 py-1 text-xs text-amber underline decoration-amber/30 underline-offset-2">
+                  {FRAMEWORK_LABELS[card.framework]}
+                </span>
               </button>
               <h2 className="text-base font-semibold text-ink">{card.title}</h2>
               <p className="text-[15px] leading-relaxed text-muted">{card.insight}</p>

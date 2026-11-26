@@ -25,7 +25,7 @@ export function FrameworkSheet({ framework, onClose }: FrameworkSheetProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="framework-guide-title"
-        className="w-full max-w-md space-y-4 rounded-t-3xl border-t border-line bg-surface p-5 pb-[max(2rem,env(safe-area-inset-bottom))] outline-none"
+        className="max-h-[90dvh] w-full max-w-md space-y-4 overflow-y-auto rounded-t-3xl border-t border-line bg-surface p-5 pb-[max(2rem,env(safe-area-inset-bottom))] outline-none"
       >
         <div className="mx-auto h-1 w-10 rounded-full bg-line" aria-hidden="true" />
 
