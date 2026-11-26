@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
+import { SlidersHorizontal } from 'lucide-react';
 import { FRAMEWORK_LABELS } from '../../content/frameworks';
 import { WISDOM_CARDS } from '../../content/wisdom';
 import { filterWisdomCards, isNightHours } from '../../domain/stageEngine';
 import type { BookFramework, MomentTag } from '../../domain/types';
+import { useAppStore } from '../../state/useAppStore';
 import { useActiveStage } from '../shared/useActiveStage';
 
 interface MomentsViewProps {
@@ -27,6 +29,7 @@ export function MomentsView({
   onOpenFramework,
 }: MomentsViewProps) {
   const { activeStage } = useActiveStage();
+  const babyName = useAppStore((s) => s.babyName);
   const [selectedMoment, setSelectedMoment] = useState<MomentTag | 'all'>(() =>
     isNightHours() ? '3am' : 'all',
   );
@@ -67,10 +70,11 @@ export function MomentsView({
           <button
             type="button"
             onClick={onOpenStagePicker}
-            aria-label={`Baby stage: ${activeStage.label}. Change stage`}
-            className="min-h-[44px] shrink-0 rounded-full border border-line bg-surface px-3.5 py-2 text-xs font-medium text-amber transition active:border-amber"
+            aria-label={`Settings and baby stage: ${activeStage.label}`}
+            className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-2 text-xs font-medium text-amber transition active:border-amber"
           >
-            {activeStage.label}
+            <span>{babyName ? `${babyName} · ${activeStage.label}` : activeStage.label}</span>
+            <SlidersHorizontal className="h-3.5 w-3.5 text-muted" />
           </button>
         )}
       </header>

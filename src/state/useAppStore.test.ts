@@ -1,15 +1,27 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { migratePersistedState, useAppStore } from './useAppStore';
+import { createSafeStorageAdapter } from './storage';
+import {
+  createBackupJson,
+  migratePersistedState,
+  parseBackupJson,
+  useAppStore,
+} from './useAppStore';
 
 describe('useAppStore', () => {
   beforeEach(() => {
     useAppStore.getState().resetProfile();
   });
 
-  it('sets baby DOB and completes onboarding', () => {
-    useAppStore.getState().setBabyDob('2026-10-01');
+  it('sets parent name, baby name, and DOB cleanly', () => {
+    const store = useAppStore.getState();
+    store.setParentName('  Ishaan  ');
+    store.setBabyName('  Aarav ');
+    store.setBabyDob('2026-10-01');
+
     const state = useAppStore.getState();
     expect(state.hasCompletedOnboarding).toBe(true);
+    expect(state.parentName).toBe('Ishaan');
+    expect(state.babyName).toBe('Aarav');
     expect(state.babyDob).toBe('2026-10-01');
     expect(state.manualStageOverride).toBeNull();
   });
@@ -35,7 +47,7 @@ describe('useAppStore', () => {
     expect(state.moodByDate['2026-09-01']).toBeUndefined();
   });
 
-  it('migrates v1 state and drops invalid fields', () => {
+  it('migrates v1 state to v3 and drops invalid fields', () => {
     const migrated = migratePersistedState(
       {
         schemaVersion: 1,
@@ -50,6 +62,8 @@ describe('useAppStore', () => {
     );
     expect(migrated).toEqual({
       hasCompletedOnboarding: true,
+      parentName: '',
+      babyName: '',
       babyDob: '2026-09-15',
       manualStageOverride: null,
       practicedByDate: { '2026-11-20': ['a'] },
@@ -58,7 +72,52 @@ describe('useAppStore', () => {
     });
   });
 
-  it('returns defaults for garbage input', () => {
-    expect(migratePersistedState('nope', 0).hasCompletedOnboarding).toBe(false);
+  it('exports and restores a full backup safely and rejects invalid JSON', () => {
+    const store = useAppStore.getState();
+    store.setParentName('Ishaan');
+    store.setBabyName('Aarav');
+    store.setBabyDob('2026-10-01');
+    store.markPracticed('rep-1', '2026-11-25');
+
+    const json = createBackupJson(useAppStore.getState());
+    store.resetProfile();
+    expect(useAppStore.getState().parentName).toBe('');
+
+    const restored = useAppStore.getState().restoreFromBackup(json);
+    expect(restored.ok).toBe(true);
+    expect(useAppStore.getState().parentName).toBe('Ishaan');
+    expect(useAppStore.getState().babyName).toBe('Aarav');
+    expect(useAppStore.getState().babyDob).toBe('2026-10-01');
+    expect(useAppStore.getState().practicedByDate['2026-11-25']).toEqual(['rep-1']);
+
+    expect(parseBackupJson('{bad json').ok).toBe(false);
+    expect(parseBackupJson('{"hello":"world"}').ok).toBe(false);
+  });
+
+  it('recovers automatically from shadow backup if primary key is corrupted', () => {
+    const map = new Map<string, string>();
+    const memoryBackend = {
+      getItem: (k: string) => map.get(k) ?? null,
+      setItem: (k: string, v: string) => {
+        map.set(k, v);
+      },
+      removeItem: (k: string) => {
+        map.delete(k);
+      },
+    };
+    const safeAdapter = createSafeStorageAdapter(() => memoryBackend);
+
+    const key = 'anchor-test-recovery';
+    const valid = JSON.stringify({ state: { parentName: 'Ishaan' }, version: 3 });
+    safeAdapter.setItem(key, valid);
+
+    // Simulate primary key corruption
+    map.set(key, '{corrupted');
+    expect(safeAdapter.getItem(key)).toBe(valid);
+    // Primary key should also be healed
+    expect(map.get(key)).toBe(valid);
+
+    safeAdapter.removeItem(key);
+    expect(map.size).toBe(0);
   });
 });

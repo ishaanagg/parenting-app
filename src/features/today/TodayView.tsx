@@ -7,6 +7,7 @@ import {
   Moon,
   RefreshCw,
   ShieldCheck,
+  SlidersHorizontal,
   Sparkles,
 } from 'lucide-react';
 import { FRAMEWORK_LABELS } from '../../content/frameworks';
@@ -59,6 +60,8 @@ export function TodayView({
   const night = isNightHours(now);
   const [whyOpen, setWhyOpen] = useState(false);
 
+  const parentName = useAppStore((s) => s.parentName);
+  const babyName = useAppStore((s) => s.babyName);
   const practicedByDate = useAppStore((s) => s.practicedByDate);
   const practicedToday = practicedByDate[dateKey] ?? EMPTY_IDS;
   const anotherCount = useAppStore((s) => s.anotherCountByDate[dateKey] ?? 0);
@@ -99,6 +102,7 @@ export function TodayView({
         <div>
           <p className="text-xs uppercase tracking-wider text-muted">
             {night ? 'Quiet Night' : 'Today'}
+            {parentName ? ` · ${parentName}` : ''}
           </p>
           <h1 className="mt-0.5 text-xl font-semibold text-ink">{activeStage.subtitle}</h1>
           <p className="mt-1 text-sm leading-relaxed text-muted">{activeStage.focusSummary}</p>
@@ -112,17 +116,22 @@ export function TodayView({
         <button
           type="button"
           onClick={onOpenStagePicker}
-          aria-label={`Baby stage: ${activeStage.label}. Change stage`}
-          className="min-h-[44px] shrink-0 rounded-full border border-line bg-surface px-3.5 py-2 text-right text-xs transition active:border-amber"
+          aria-label={`Settings and baby stage: ${activeStage.label}`}
+          className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-2 text-right text-xs transition active:border-amber"
         >
-          <span className="block font-medium text-amber">{activeStage.label}</span>
-          {isBrowsing ? (
-            <span className="block text-xs text-muted">Browsing · return</span>
-          ) : (
-            ageInWeeks !== null && (
+          <span>
+            <span className="block font-medium text-amber">
+              {babyName || activeStage.label}
+            </span>
+            {isBrowsing ? (
+              <span className="block text-xs text-muted">Browsing · return</span>
+            ) : ageInWeeks !== null ? (
               <span className="block text-xs text-muted">Week {ageInWeeks}</span>
-            )
-          )}
+            ) : babyName ? (
+              <span className="block text-xs text-muted">{activeStage.label}</span>
+            ) : null}
+          </span>
+          <SlidersHorizontal className="h-3.5 w-3.5 shrink-0 text-muted" />
         </button>
       </header>
 

@@ -5,7 +5,7 @@ import { MomentsView } from '../moments/MomentsView';
 import { FrameworkSheet } from '../shared/FrameworkSheet';
 import { SosOverlay } from '../sos/SosOverlay';
 import { TodayView } from '../today/TodayView';
-import { StagePickerSheet } from './StagePickerSheet';
+import { SettingsSheet } from './SettingsSheet';
 
 type TabId = 'today' | 'moments';
 
@@ -76,7 +76,7 @@ export function AppShell() {
       </nav>
 
       {stagePickerOpen && (
-        <StagePickerSheet onClose={() => setStagePickerOpen(false)} />
+        <SettingsSheet onClose={() => setStagePickerOpen(false)} />
       )}
 
       {activeFramework && (

@@ -10,11 +10,14 @@ import { getParentDayKey, parseIsoDate, pruneDateRecord } from '../domain/stageE
 import { localStorageAdapter } from './storage';
 
 /** Bump when the persisted shape changes; add a branch in migratePersistedState. */
-export const STORE_VERSION = 2;
+export const STORE_VERSION = 3;
 export const RETENTION_DAYS = 30;
+const MAX_NAME_LENGTH = 40;
 
 export interface PersistedAppState {
   hasCompletedOnboarding: boolean;
+  parentName: string;
+  babyName: string;
   babyDob: string | null;
   manualStageOverride: StageId | null;
   /** parentDayKey -> practice ids marked practiced */
@@ -25,14 +28,24 @@ export interface PersistedAppState {
   moodByDate: Record<string, ParentMood>;
 }
 
+export interface BackupEnvelope {
+  app: 'anchor';
+  version: number;
+  exportedAt: string;
+  data: PersistedAppState;
+}
+
 export interface AppActions {
-  setBabyDob: (dob: string) => void;
+  setParentName: (name: string) => void;
+  setBabyName: (name: string) => void;
+  setBabyDob: (dob: string | null) => void;
   setManualStage: (stageId: StageId | null) => void;
   completeOnboardingWithStage: (stageId: StageId) => void;
   markPracticed: (practiceId: string, dateKey?: string) => void;
   togglePracticed: (practiceId: string, dateKey?: string) => void;
   showAnotherPractice: (dateKey?: string) => void;
   setMood: (mood: ParentMood, dateKey?: string) => void;
+  restoreFromBackup: (rawJson: string) => { ok: true } | { ok: false; error: string };
   resetProfile: () => void;
 }
 
@@ -40,6 +53,8 @@ export type AppStore = PersistedAppState & AppActions;
 
 export const INITIAL_PERSISTED_STATE: PersistedAppState = {
   hasCompletedOnboarding: false,
+  parentName: '',
+  babyName: '',
   babyDob: null,
   manualStageOverride: null,
   practicedByDate: {},
@@ -54,6 +69,11 @@ const isStageId = (v: unknown): v is StageId =>
   typeof v === 'string' && (STAGE_IDS as readonly string[]).includes(v);
 const isMood = (v: unknown): v is ParentMood =>
   typeof v === 'string' && (PARENT_MOODS as readonly string[]).includes(v);
+
+function sanitizeName(v: unknown): string {
+  if (typeof v !== 'string') return '';
+  return v.trim().slice(0, MAX_NAME_LENGTH);
+}
 
 function sanitizeStringArrayRecord(v: unknown): Record<string, string[]> {
   if (!isRecord(v)) return {};
@@ -95,15 +115,15 @@ export function migratePersistedState(raw: unknown, fromVersion: number): Persis
 
   const anotherCountByDate = sanitizeCountRecord(raw.anotherCountByDate);
   if (fromVersion < 2) {
-    // v1 stored skipped practice ids per day; translate to an "Another" count.
     for (const [k, ids] of Object.entries(sanitizeStringArrayRecord(raw.skippedByDate))) {
       anotherCountByDate[k] = ids.length;
     }
-    // v1 `lastMood` was not date-scoped; intentionally dropped.
   }
 
   return {
     hasCompletedOnboarding: raw.hasCompletedOnboarding === true,
+    parentName: sanitizeName(raw.parentName),
+    babyName: sanitizeName(raw.babyName),
     babyDob:
       typeof raw.babyDob === 'string' && parseIsoDate(raw.babyDob) ? raw.babyDob : null,
     manualStageOverride: isStageId(raw.manualStageOverride) ? raw.manualStageOverride : null,
@@ -113,13 +133,81 @@ export function migratePersistedState(raw: unknown, fromVersion: number): Persis
   };
 }
 
+/**
+ * Serializes current persisted state into a portable JSON backup envelope.
+ */
+export function createBackupJson(state: PersistedAppState): string {
+  const envelope: BackupEnvelope = {
+    app: 'anchor',
+    version: STORE_VERSION,
+    exportedAt: new Date().toISOString(),
+    data: {
+      hasCompletedOnboarding: state.hasCompletedOnboarding,
+      parentName: state.parentName,
+      babyName: state.babyName,
+      babyDob: state.babyDob,
+      manualStageOverride: state.manualStageOverride,
+      practicedByDate: state.practicedByDate,
+      anotherCountByDate: state.anotherCountByDate,
+      moodByDate: state.moodByDate,
+    },
+  };
+  return JSON.stringify(envelope, null, 2);
+}
+
+/**
+ * Parses and validates an Anchor backup JSON string without mutating live state on error.
+ */
+export function parseBackupJson(
+  rawJson: string,
+): { ok: true; state: PersistedAppState } | { ok: false; error: string } {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(rawJson);
+  } catch {
+    return { ok: false, error: 'That doesn’t look like valid backup JSON.' };
+  }
+
+  if (!isRecord(parsed)) {
+    return { ok: false, error: 'Backup file format is not recognized.' };
+  }
+
+  // Support both wrapped Anchor envelope and raw zustand persisted export
+  if (parsed.app === 'anchor' && isRecord(parsed.data)) {
+    const version = typeof parsed.version === 'number' ? parsed.version : STORE_VERSION;
+    const migrated = migratePersistedState(parsed.data, version);
+    return {
+      ok: true,
+      state: { ...migrated, hasCompletedOnboarding: true },
+    };
+  }
+
+  if (isRecord(parsed.state) && typeof parsed.version === 'number') {
+    const migrated = migratePersistedState(parsed.state, parsed.version);
+    return {
+      ok: true,
+      state: { ...migrated, hasCompletedOnboarding: true },
+    };
+  }
+
+  return { ok: false, error: 'This file is not an Anchor backup.' };
+}
+
 export const useAppStore = create<AppStore>()(
   persist(
     (set) => ({
       ...INITIAL_PERSISTED_STATE,
 
+      setParentName: (name) => set({ parentName: sanitizeName(name) }),
+
+      setBabyName: (name) => set({ babyName: sanitizeName(name) }),
+
       setBabyDob: (dob) =>
-        set({ babyDob: dob, manualStageOverride: null, hasCompletedOnboarding: true }),
+        set((state) => ({
+          babyDob: dob && parseIsoDate(dob) ? dob : null,
+          manualStageOverride: dob ? null : state.manualStageOverride,
+          hasCompletedOnboarding: true,
+        })),
 
       setManualStage: (stageId) => set({ manualStageOverride: stageId }),
 
@@ -175,6 +263,13 @@ export const useAppStore = create<AppStore>()(
           ),
         })),
 
+      restoreFromBackup: (rawJson) => {
+        const result = parseBackupJson(rawJson);
+        if (!result.ok) return result;
+        set(result.state);
+        return { ok: true };
+      },
+
       resetProfile: () => set({ ...INITIAL_PERSISTED_STATE }),
     }),
     {
@@ -184,6 +279,8 @@ export const useAppStore = create<AppStore>()(
       migrate: (persistedState, version) => migratePersistedState(persistedState, version),
       partialize: (state): PersistedAppState => ({
         hasCompletedOnboarding: state.hasCompletedOnboarding,
+        parentName: state.parentName,
+        babyName: state.babyName,
         babyDob: state.babyDob,
         manualStageOverride: state.manualStageOverride,
         practicedByDate: state.practicedByDate,
