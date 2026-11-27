@@ -14,6 +14,7 @@ export function AppShell() {
   const [sosState, setSosState] = useState<{
     open: boolean;
     initialPath?: 'baby' | 'parent';
+    autoStartTimer?: boolean;
   }>({ open: false });
   const [stagePickerOpen, setStagePickerOpen] = useState(false);
   const [activeFramework, setActiveFramework] = useState<BookFramework | null>(null);
@@ -24,13 +25,17 @@ export function AppShell() {
         {activeTab === 'today' ? (
           <TodayView
             onOpenStagePicker={() => setStagePickerOpen(true)}
-            onOpenSos={(initialPath) => setSosState({ open: true, initialPath })}
+            onOpenSos={(initialPath, autoStartTimer) =>
+              setSosState({ open: true, initialPath, autoStartTimer })
+            }
             onOpenFramework={setActiveFramework}
           />
         ) : (
           <MomentsView
             onOpenStagePicker={() => setStagePickerOpen(true)}
-            onOpenSos={(initialPath) => setSosState({ open: true, initialPath })}
+            onOpenSos={(initialPath, autoStartTimer) =>
+              setSosState({ open: true, initialPath, autoStartTimer })
+            }
             onOpenFramework={setActiveFramework}
           />
         )}
@@ -89,6 +94,7 @@ export function AppShell() {
       {sosState.open && (
         <SosOverlay
           initialPath={sosState.initialPath}
+          autoStartTimer={sosState.autoStartTimer}
           onClose={() => setSosState({ open: false })}
         />
       )}

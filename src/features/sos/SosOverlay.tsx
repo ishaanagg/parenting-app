@@ -34,6 +34,7 @@ type ParentTab = 'repair' | 'trigger' | 'support';
 
 interface SosOverlayProps {
   initialPath?: 'baby' | 'parent';
+  autoStartTimer?: boolean;
   onClose: () => void;
 }
 
@@ -47,9 +48,15 @@ export function formatSeconds(totalSeconds: number): string {
  * Wall-clock countdown with optional vibration on completion and Screen Wake Lock
  * so a 3 AM parent doesn't have to keep tapping a glowing screen.
  */
-function useLaPauseTimer(totalSeconds: number, vibrateOnDone: boolean) {
+function useLaPauseTimer(
+  totalSeconds: number,
+  vibrateOnDone: boolean,
+  autoStart = false,
+) {
   const [remaining, setRemaining] = useState(totalSeconds);
-  const [endsAt, setEndsAt] = useState<number | null>(null);
+  const [endsAt, setEndsAt] = useState<number | null>(() =>
+    autoStart ? Date.now() + totalSeconds * 1000 : null,
+  );
   const [completed, setCompleted] = useState(false);
   const vibrateRef = useRef(vibrateOnDone);
   vibrateRef.current = vibrateOnDone;
@@ -117,13 +124,13 @@ function useLaPauseTimer(totalSeconds: number, vibrateOnDone: boolean) {
  * while the concentric orb expands/contracts gently (and still works under reduced motion).
  */
 function BreathingPacer() {
-  const [elapsedSec, setElapsedSec] = useState(0);
+  const [totalSec, setTotalSec] = useState(0);
   const [started, setStarted] = useState(false);
 
   useEffect(() => {
     const raf = window.requestAnimationFrame(() => setStarted(true));
     const id = window.setInterval(() => {
-      setElapsedSec((prev) => (prev + 1) % 10);
+      setTotalSec((prev) => prev + 1);
     }, 1000);
     return () => {
       window.cancelAnimationFrame(raf);
@@ -131,6 +138,8 @@ function BreathingPacer() {
     };
   }, []);
 
+  const elapsedSec = totalSec % 10;
+  const completedBreaths = Math.floor(totalSec / 10);
   const isInhale = elapsedSec < 4;
   const phaseCountdown = isInhale ? 4 - elapsedSec : 10 - elapsedSec;
   const expanded = started && isInhale;
@@ -159,6 +168,17 @@ function BreathingPacer() {
           <span className="mt-0.5 block text-xs tabular-nums text-muted">{phaseCountdown}s</span>
         </div>
       </div>
+
+      {completedBreaths >= 3 ? (
+        <p role="status" className="text-sm font-medium text-sage">
+          3 slow breaths done. Feeling a notch steadier? Pick a next step below.
+        </p>
+      ) : (
+        <p className="text-xs tabular-nums text-muted">
+          Breath {completedBreaths + 1} of 3
+        </p>
+      )}
+
       <p className="font-serif text-lg text-ink">Your calm is the anchor.</p>
       <p className="text-sm leading-relaxed text-muted">
         A tight chest or rising anger is your nervous system asking for a pause—not a sign you’re
@@ -168,14 +188,18 @@ function BreathingPacer() {
   );
 }
 
-export function SosOverlay({ initialPath, onClose }: SosOverlayProps) {
+export function SosOverlay({ initialPath, autoStartTimer, onClose }: SosOverlayProps) {
   const { activeStage } = useActiveStage();
   const [path, setPath] = useState<SosPath>(initialPath ?? 'triage');
   const [parentTab, setParentTab] = useState<ParentTab>('repair');
   const [vibrateOnDone, setVibrateOnDone] = useState(true);
   const [safetyExpanded, setSafetyExpanded] = useState(false);
 
-  const timer = useLaPauseTimer(activeStage.laPauseSeconds, vibrateOnDone);
+  const timer = useLaPauseTimer(
+    activeStage.laPauseSeconds,
+    vibrateOnDone,
+    initialPath === 'baby' && Boolean(autoStartTimer),
+  );
   const dialogRef = useDialog<HTMLDivElement>(onClose);
 
   const stageCues = CRY_CUES.filter(
@@ -227,10 +251,14 @@ export function SosOverlay({ initialPath, onClose }: SosOverlayProps) {
                 <Moon className="mt-0.5 h-5 w-5 shrink-0 text-amber" />
                 <div>
                   <span className="block text-base font-semibold text-ink">
-                    Baby is crying / 3 AM wake-up
+                    {activeStage.id === '0-6w'
+                      ? 'Sleep grunts / 3 AM stirring'
+                      : 'Baby is crying / 3 AM wake-up'}
                   </span>
                   <span className="mt-1 block text-sm text-muted">
-                    {formatSeconds(activeStage.laPauseSeconds)} La Pause timer &amp; cry cues
+                    {activeStage.id === '0-6w'
+                      ? `${formatSeconds(activeStage.laPauseSeconds)} La Pause for active sleep (feed if truly crying)`
+                      : `${formatSeconds(activeStage.laPauseSeconds)} La Pause timer & cry cues`}
                   </span>
                 </div>
               </button>

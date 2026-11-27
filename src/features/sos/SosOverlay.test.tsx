@@ -13,9 +13,9 @@ describe('SosOverlay', () => {
     vi.useRealTimers();
   });
 
-  it('shows both distress paths and compact expandable safety bar', () => {
+  it('shows newborn-safe 0-6w triage copy and compact expandable safety bar', () => {
     render(<SosOverlay onClose={vi.fn()} />);
-    expect(screen.getByText(/Baby is crying \/ 3 AM wake-up/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sleep grunts \/ 3 AM stirring/i)).toBeInTheDocument();
     expect(screen.getByText(/I’m overwhelmed \/ triggered/i)).toBeInTheDocument();
     expect(screen.getByText(/Safe crib pause anytime/i)).toBeInTheDocument();
 
@@ -23,6 +23,20 @@ describe('SosOverlay', () => {
     expect(
       screen.getByText(/Anchor offers calm parenting support, not medical advice/i),
     ).toBeInTheDocument();
+  });
+
+  it('auto-starts La Pause when autoStartTimer is true and shows 3-breath milestone', () => {
+    vi.useFakeTimers();
+    const { unmount } = render(<SosOverlay initialPath="baby" autoStartTimer onClose={vi.fn()} />);
+    expect(screen.getByText(/Pause timer/i)).toBeInTheDocument();
+    unmount();
+
+    render(<SosOverlay initialPath="parent" onClose={vi.fn()} />);
+    expect(screen.getByText(/Breath 1 of 3/i)).toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(30_000);
+    });
+    expect(screen.getByText(/3 slow breaths done/i)).toBeInTheDocument();
   });
 
   it('parent path shows live breathing pacer, safe sleep, and stepped tabs', () => {

@@ -137,3 +137,21 @@ export async function listDailyBackups(
 ): Promise<DailyBackupSnapshot[]> {
   return backend.getAll();
 }
+
+/**
+ * Updates today's snapshot in place (e.g., after saving profile settings) while
+ * keeping the rolling 7-day cap intact.
+ */
+export async function upsertTodayBackup(
+  state: PersistedAppState,
+  dateKey: string = getDateKey(),
+  backend: BackupStoreBackend = indexedDbBackupBackend,
+): Promise<void> {
+  if (!state.hasCompletedOnboarding) return;
+  const snapshot: DailyBackupSnapshot = {
+    dateKey,
+    savedAt: new Date().toISOString(),
+    backupJson: createBackupJson(state),
+  };
+  await backend.put(snapshot);
+}

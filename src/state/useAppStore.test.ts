@@ -67,6 +67,7 @@ describe('useAppStore', () => {
       babyDob: '2026-09-15',
       manualStageOverride: null,
       themePreference: 'auto',
+      savedCardIds: [],
       practicedByDate: { '2026-11-20': ['a'] },
       anotherCountByDate: { '2026-11-20': 2 },
       moodByDate: {},

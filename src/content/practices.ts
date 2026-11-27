@@ -158,4 +158,54 @@ export const PRACTICES: PracticeRep[] = [
     whyItWorks:
       'Philippa Perry: small, everyday repairs build deep trust—far more than trying to be endlessly patient.',
   },
+  {
+    id: 'perry-skin-breath-0-6w',
+    stages: ['0-6w', '6-12w'],
+    framework: 'perry',
+    title: 'Two slow breaths during one feed',
+    prompt:
+      'During one feed today, set your phone face-down for two minutes. Feel your shoulders drop and notice baby’s warmth without optimizing anything.',
+    whyItWorks:
+      'Philippa Perry: quiet, unhurried presence is the simplest way to build attachment—no perfection or performance needed.',
+  },
+  {
+    id: 'cadre-wait-beat-3-9m',
+    stages: ['3-6m', '6-9m'],
+    framework: 'le-cadre',
+    title: 'A 10-second gentle wait ("Un moment")',
+    prompt:
+      'When baby fusses mildly while you finish pouring water or putting on shoes, say calmly: "I hear you—just one moment," finish calmly, then pick them up.',
+    whyItWorks:
+      'Bringing Up Bébé: tiny, predictable waits inside a warm relationship gently introduce patience without distress.',
+  },
+  {
+    id: 'hgp-no-overpraise-6-12m',
+    stages: ['6-9m', '9-12m'],
+    framework: 'hgp',
+    title: 'Describe instead of clapping',
+    prompt:
+      'Once today when baby stacks a cup or pulls up to stand, skip "Good job!" and simply smile or describe what you see: "You reached the cup."',
+    whyItWorks:
+      'Hunter, Gather, Parent: describing effort rather than applauding every move keeps motivation internal and calm.',
+  },
+  {
+    id: 'hgp-shared-errand-6-12m',
+    stages: ['6-9m', '9-12m'],
+    framework: 'hgp',
+    title: 'Turn an errand into togetherness',
+    prompt:
+      'On a grocery run or walk today, let baby hold a safe item (a bell pepper, a wooden spoon) and look around at real people instead of handing over a phone.',
+    whyItWorks:
+      'Hunter, Gather, Parent: real-world errands are rich learning environments when baby is treated as a quiet companion.',
+  },
+  {
+    id: 'cadre-mealtime-pace-9-12m',
+    stages: ['9-12m'],
+    framework: 'le-cadre',
+    title: 'Sit down together for one meal',
+    prompt:
+      'Instead of hovering and spoon-feeding standing up, sit down with your own small plate for 10 minutes and eat alongside baby at a calm pace.',
+    whyItWorks:
+      'Bringing Up Bébé: modeling unhurried, enjoyable meals teaches table rhythm far better than coaxing.',
+  },
 ];

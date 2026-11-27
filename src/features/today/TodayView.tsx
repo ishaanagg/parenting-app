@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
 import {
+  Bookmark,
   Check,
   ChevronDown,
   ChevronUp,
   HeartHandshake,
   Moon,
   RefreshCw,
+  Share2,
   ShieldCheck,
   SlidersHorizontal,
 } from 'lucide-react';
@@ -14,13 +16,14 @@ import { PRACTICES } from '../../content/practices';
 import { getParentDayKey, isNightHours, pickDailyPractice } from '../../domain/stageEngine';
 import type { BookFramework, ParentMood } from '../../domain/types';
 import { useAppStore } from '../../state/useAppStore';
+import { shareOrCopy } from '../shared/shareText';
 import { useActiveStage } from '../shared/useActiveStage';
 import { useNow } from '../shared/useNow';
 import { formatSeconds } from '../sos/SosOverlay';
 
 interface TodayViewProps {
   onOpenStagePicker: () => void;
-  onOpenSos: (initialPath?: 'baby' | 'parent') => void;
+  onOpenSos: (initialPath?: 'baby' | 'parent', autoStartTimer?: boolean) => void;
   onOpenFramework?: (framework: BookFramework) => void;
 }
 
@@ -58,14 +61,17 @@ export function TodayView({
   const dateKey = getParentDayKey(now);
   const night = isNightHours(now);
   const [whyOpen, setWhyOpen] = useState(false);
+  const [sharedId, setSharedId] = useState<string | null>(null);
 
   const parentName = useAppStore((s) => s.parentName);
   const babyName = useAppStore((s) => s.babyName);
+  const savedCardIds = useAppStore((s) => s.savedCardIds);
   const practicedByDate = useAppStore((s) => s.practicedByDate);
   const practicedToday = practicedByDate[dateKey] ?? EMPTY_IDS;
   const anotherCount = useAppStore((s) => s.anotherCountByDate[dateKey] ?? 0);
   const mood = useAppStore((s) => s.moodByDate[dateKey] ?? null);
   const togglePracticed = useAppStore((s) => s.togglePracticed);
+  const toggleSavedCard = useAppStore((s) => s.toggleSavedCard);
   const showAnotherPractice = useAppStore((s) => s.showAnotherPractice);
   const setMood = useAppStore((s) => s.setMood);
 
@@ -148,7 +154,7 @@ export function TodayView({
           <div className="grid grid-cols-2 gap-2.5">
             <button
               type="button"
-              onClick={() => onOpenSos('baby')}
+              onClick={() => onOpenSos('baby', true)}
               className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl bg-amber px-3 text-sm font-semibold text-on-amber transition active:scale-[0.98]"
             >
               <Moon className="h-4 w-4" />
@@ -176,15 +182,47 @@ export function TodayView({
             <span className="text-xs tracking-widest uppercase text-amber">
               {night ? 'For morning' : 'Today’s Practice'}
             </span>
-            <button
-              type="button"
-              onClick={() => onOpenFramework?.(practice.framework)}
-              className="-my-2 inline-flex min-h-[44px] items-center"
-            >
-              <span className="rounded-full bg-elevated px-2.5 py-1 text-xs text-muted transition active:text-ink">
-                {FRAMEWORK_LABELS[practice.framework]}
-              </span>
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                aria-label={savedCardIds.includes(practice.id) ? 'Remove bookmark' : 'Bookmark practice'}
+                aria-pressed={savedCardIds.includes(practice.id)}
+                onClick={() => toggleSavedCard(practice.id)}
+                className="flex h-11 w-11 items-center justify-center rounded-full text-muted transition active:text-amber"
+              >
+                <Bookmark
+                  className={`h-4 w-4 ${savedCardIds.includes(practice.id) ? 'fill-amber text-amber' : ''}`}
+                />
+              </button>
+              <button
+                type="button"
+                aria-label="Share practice"
+                onClick={() => {
+                  shareOrCopy(practice.title, practice.prompt).then((res) => {
+                    if (res === 'copied') {
+                      setSharedId(practice.id);
+                      window.setTimeout(() => setSharedId(null), 1800);
+                    }
+                  });
+                }}
+                className="flex h-11 w-11 items-center justify-center rounded-full text-muted transition active:text-ink"
+              >
+                {sharedId === practice.id ? (
+                  <Check className="h-4 w-4 text-sage" />
+                ) : (
+                  <Share2 className="h-4 w-4" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenFramework?.(practice.framework)}
+                className="-my-2 inline-flex min-h-[44px] items-center"
+              >
+                <span className="rounded-full bg-elevated px-2.5 py-1 text-xs text-muted transition active:text-ink">
+                  {FRAMEWORK_LABELS[practice.framework]}
+                </span>
+              </button>
+            </div>
           </div>
 
           <div key={practice.id} className="animate-calm-in space-y-3">

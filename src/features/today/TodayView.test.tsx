@@ -24,9 +24,20 @@ describe('TodayView', () => {
       'true',
     );
 
+    // Bookmark & Share practice
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Bookmark practice/i }));
+    expect(useAppStore.getState().savedCardIds.length).toBe(1);
+    fireEvent.click(screen.getByRole('button', { name: /Share practice/i }));
+    expect(writeText).toHaveBeenCalledTimes(1);
+
     fireEvent.click(screen.getByText(/Mark practiced/i));
     expect(screen.getByText(/Practiced today/i)).toBeInTheDocument();
-    expect(screen.getByText(/1 of 5 fourth trimester practices tried recently/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 of 6 fourth trimester practices tried recently/i)).toBeInTheDocument();
 
     // Tapping again undoes accidental tap
     fireEvent.click(screen.getByText(/Practiced today/i));
@@ -46,6 +57,17 @@ describe('TodayView', () => {
       'aria-expanded',
       'true',
     );
+
+    // Bookmark & Share practice
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Bookmark practice/i }));
+    expect(useAppStore.getState().savedCardIds.length).toBe(1);
+    fireEvent.click(screen.getByRole('button', { name: /Share practice/i }));
+    expect(writeText).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByText(/Mark practiced/i));
     const another = screen.getByRole('button', { name: /Show another practice/i });

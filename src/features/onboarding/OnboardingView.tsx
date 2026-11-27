@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { LifeBuoy } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { History, LifeBuoy } from 'lucide-react';
 import { STAGES } from '../../content/stages';
 import { getDateKey } from '../../domain/stageEngine';
+import { listDailyBackups, type DailyBackupSnapshot } from '../../state/dailyBackup';
 import { useAppStore } from '../../state/useAppStore';
 
 interface OnboardingViewProps {
@@ -13,7 +14,21 @@ export function OnboardingView({ onOpenSos }: OnboardingViewProps) {
   const completeOnboardingWithStage = useAppStore(
     (s) => s.completeOnboardingWithStage,
   );
+  const restoreFromBackup = useAppStore((s) => s.restoreFromBackup);
   const [dob, setDob] = useState('');
+  const [recoverableSnapshot, setRecoverableSnapshot] = useState<DailyBackupSnapshot | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    listDailyBackups()
+      .then((snaps) => {
+        if (active && snaps[0]) setRecoverableSnapshot(snaps[0]);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleDobSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +66,22 @@ export function OnboardingView({ onOpenSos }: OnboardingViewProps) {
       </div>
 
       <div className="space-y-6">
+        {recoverableSnapshot && (
+          <div className="space-y-2.5 rounded-2xl border border-sage/35 bg-surface p-4">
+            <p className="flex items-center gap-2 text-xs font-medium text-sage">
+              <History className="h-4 w-4" />
+              Previous backup found ({recoverableSnapshot.dateKey})
+            </p>
+            <button
+              type="button"
+              onClick={() => restoreFromBackup(recoverableSnapshot.backupJson)}
+              className="min-h-[48px] w-full rounded-xl bg-sage/20 px-4 text-sm font-semibold text-sage"
+            >
+              Restore my saved data
+            </button>
+          </div>
+        )}
+
         <form
           onSubmit={handleDobSubmit}
           className="space-y-4 rounded-2xl bg-surface p-5 ring-1 ring-line"

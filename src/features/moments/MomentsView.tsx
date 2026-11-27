@@ -1,19 +1,22 @@
 import { useMemo, useState } from 'react';
-import { SlidersHorizontal } from 'lucide-react';
+import { Bookmark, Check, Share2, SlidersHorizontal } from 'lucide-react';
 import { FRAMEWORK_LABELS } from '../../content/frameworks';
 import { WISDOM_CARDS } from '../../content/wisdom';
 import { filterWisdomCards, isNightHours } from '../../domain/stageEngine';
 import type { BookFramework, MomentTag } from '../../domain/types';
 import { useAppStore } from '../../state/useAppStore';
+import { shareOrCopy } from '../shared/shareText';
 import { useActiveStage } from '../shared/useActiveStage';
 
 interface MomentsViewProps {
   onOpenStagePicker?: () => void;
-  onOpenSos?: (initialPath?: 'baby' | 'parent') => void;
+  onOpenSos?: (initialPath?: 'baby' | 'parent', autoStartTimer?: boolean) => void;
   onOpenFramework?: (framework: BookFramework) => void;
 }
 
-const BASE_FILTERS: { id: MomentTag | 'all'; label: string }[] = [
+type MomentsFilterId = MomentTag | 'all' | 'saved';
+
+const BASE_FILTERS: { id: MomentsFilterId; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: '3am', label: '3 AM' },
   { id: 'fussy', label: 'Fussy' },
@@ -30,32 +33,40 @@ export function MomentsView({
 }: MomentsViewProps) {
   const { activeStage } = useActiveStage();
   const babyName = useAppStore((s) => s.babyName);
-  const [selectedMoment, setSelectedMoment] = useState<MomentTag | 'all'>(() =>
+  const savedCardIds = useAppStore((s) => s.savedCardIds);
+  const toggleSavedCard = useAppStore((s) => s.toggleSavedCard);
+  const [selectedMoment, setSelectedMoment] = useState<MomentsFilterId>(() =>
     isNightHours() ? '3am' : 'all',
   );
+  const [copiedCardId, setCopiedCardId] = useState<string | null>(null);
 
   const filters = useMemo(() => {
-    const showBoundaries = activeStage.id === '6-9m' || activeStage.id === '9-12m';
-    if (!showBoundaries) return BASE_FILTERS;
-    return [
-      ...BASE_FILTERS.slice(0, 5),
-      { id: 'boundaries' as const, label: 'Boundaries' },
-      ...BASE_FILTERS.slice(5),
-    ];
-  }, [activeStage.id]);
+    const list: { id: MomentsFilterId; label: string }[] = [...BASE_FILTERS];
+    if (activeStage.id === '6-9m' || activeStage.id === '9-12m') {
+      list.splice(5, 0, { id: 'boundaries', label: 'Boundaries' });
+    }
+    if (savedCardIds.length > 0) {
+      list.splice(1, 0, { id: 'saved', label: `Saved (${savedCardIds.length})` });
+    }
+    return list;
+  }, [activeStage.id, savedCardIds.length]);
 
-  const effectiveMoment =
-    selectedMoment === 'boundaries' &&
-    activeStage.id !== '6-9m' &&
-    activeStage.id !== '9-12m'
+  const effectiveMoment: MomentsFilterId =
+    (selectedMoment === 'boundaries' &&
+      activeStage.id !== '6-9m' &&
+      activeStage.id !== '9-12m') ||
+    (selectedMoment === 'saved' && savedCardIds.length === 0)
       ? 'all'
       : selectedMoment;
 
-  const cards = filterWisdomCards({
-    stageId: activeStage.id,
-    moment: effectiveMoment,
-    cards: WISDOM_CARDS,
-  });
+  const cards =
+    effectiveMoment === 'saved'
+      ? WISDOM_CARDS.filter((c) => savedCardIds.includes(c.id))
+      : filterWisdomCards({
+          stageId: activeStage.id,
+          moment: effectiveMoment,
+          cards: WISDOM_CARDS,
+        });
 
   return (
     <div className="animate-calm-in space-y-5">
@@ -116,15 +127,51 @@ export function MomentsView({
               key={card.id}
               className="space-y-3.5 rounded-3xl bg-surface p-6 ring-1 ring-line"
             >
-              <button
-                type="button"
-                onClick={() => onOpenFramework?.(card.framework)}
-                className="-my-2 inline-flex min-h-[44px] items-center"
-              >
-                <span className="rounded-full bg-elevated px-2.5 py-1 text-xs text-amber">
-                  {FRAMEWORK_LABELS[card.framework]}
-                </span>
-              </button>
+              <div className="flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => onOpenFramework?.(card.framework)}
+                  className="-my-2 inline-flex min-h-[44px] items-center"
+                >
+                  <span className="rounded-full bg-elevated px-2.5 py-1 text-xs text-amber">
+                    {FRAMEWORK_LABELS[card.framework]}
+                  </span>
+                </button>
+                <div className="flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    aria-label={savedCardIds.includes(card.id) ? 'Remove bookmark' : 'Bookmark card'}
+                    aria-pressed={savedCardIds.includes(card.id)}
+                    onClick={() => toggleSavedCard(card.id)}
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-muted transition active:text-amber"
+                  >
+                    <Bookmark
+                      className={`h-4 w-4 ${savedCardIds.includes(card.id) ? 'fill-amber text-amber' : ''}`}
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Share ${card.title}`}
+                    onClick={() => {
+                      shareOrCopy(card.title, `Try now: ${card.tryNow}\n\n${card.insight}`).then(
+                        (res) => {
+                          if (res === 'copied') {
+                            setCopiedCardId(card.id);
+                            window.setTimeout(() => setCopiedCardId(null), 1800);
+                          }
+                        },
+                      );
+                    }}
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-muted transition active:text-ink"
+                  >
+                    {copiedCardId === card.id ? (
+                      <Check className="h-4 w-4 text-sage" />
+                    ) : (
+                      <Share2 className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
 
               <h2 className="font-serif text-xl leading-snug font-normal text-ink">
                 {card.title}
@@ -139,7 +186,7 @@ export function MomentsView({
                 {card.action === 'la-pause' && onOpenSos && (
                   <button
                     type="button"
-                    onClick={() => onOpenSos('baby')}
+                    onClick={() => onOpenSos('baby', true)}
                     className="min-h-[44px] w-full rounded-xl border border-amber/40 bg-amber/15 px-3 text-xs font-semibold text-amber"
                   >
                     Open La Pause Timer →

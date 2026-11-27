@@ -3,7 +3,11 @@ import { Check, Copy, Download, History, Moon, Sun, Sunrise, Upload, X } from 'l
 import { STAGES } from '../../content/stages';
 import { getDateKey } from '../../domain/stageEngine';
 import type { ThemePreference } from '../../domain/types';
-import { listDailyBackups, type DailyBackupSnapshot } from '../../state/dailyBackup';
+import {
+  listDailyBackups,
+  upsertTodayBackup,
+  type DailyBackupSnapshot,
+} from '../../state/dailyBackup';
 import { createBackupJson, useAppStore } from '../../state/useAppStore';
 import { useActiveStage } from '../shared/useActiveStage';
 import { useDialog } from '../shared/useDialog';
@@ -61,6 +65,7 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
     setParentName(parentInput);
     setBabyName(babyInput);
     setBabyDob(dobInput || null);
+    upsertTodayBackup(useAppStore.getState()).catch(() => {});
     setSavedNotice(true);
     window.setTimeout(() => setSavedNotice(false), 2000);
   };

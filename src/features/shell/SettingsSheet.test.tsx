@@ -5,6 +5,7 @@ import { SettingsSheet } from './SettingsSheet';
 
 vi.mock('../../state/dailyBackup', () => ({
   listDailyBackups: vi.fn().mockResolvedValue([]),
+  upsertTodayBackup: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe('SettingsSheet', () => {
@@ -45,6 +46,7 @@ describe('SettingsSheet', () => {
       babyDob: '2026-09-01',
       manualStageOverride: null,
       themePreference: 'night',
+      savedCardIds: [],
       practicedByDate: { '2026-11-25': ['rep-1'] },
       anotherCountByDate: {},
       moodByDate: {},

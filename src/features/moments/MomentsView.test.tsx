@@ -24,7 +24,12 @@ describe('MomentsView', () => {
     expect(screen.queryByRole('button', { name: 'Boundaries' })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Open La Pause Timer/i }));
-    expect(onOpenSos).toHaveBeenCalledWith('baby');
+    expect(onOpenSos).toHaveBeenCalledWith('baby', true);
+
+    // Bookmark a card and filter by Saved
+    fireEvent.click(screen.getAllByRole('button', { name: /Bookmark card/i })[0]!);
+    fireEvent.click(screen.getByRole('button', { name: /Saved \(1\)/i }));
+    expect(screen.getByText(/Active sleep sounds like waking/i)).toBeInTheDocument();
   });
 
   it('shows Boundaries filter for 9-12m and triggers FrameworkSheet callback', () => {
