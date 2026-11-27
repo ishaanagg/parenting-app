@@ -26,16 +26,18 @@ describe('useAppStore', () => {
     expect(state.manualStageOverride).toBeNull();
   });
 
-  it('records practiced reps without duplicates and counts "Another" taps', () => {
+  it('records practiced reps without duplicates and counts "Another" taps per track', () => {
     const store = useAppStore.getState();
     store.markPracticed('rep-1', '2026-11-25');
     store.markPracticed('rep-1', '2026-11-25');
     store.showAnotherPractice('2026-11-25');
     store.showAnotherPractice('2026-11-25');
+    store.showAnotherPractice('2026-11-25', 'couple');
 
     const state = useAppStore.getState();
     expect(state.practicedByDate['2026-11-25']).toEqual(['rep-1']);
     expect(state.anotherCountByDate['2026-11-25']).toBe(2);
+    expect(state.coupleAnotherCountByDate['2026-11-25']).toBe(1);
   });
 
   it('scopes mood to the day and prunes old entries', () => {
@@ -70,6 +72,7 @@ describe('useAppStore', () => {
       savedCardIds: [],
       practicedByDate: { '2026-11-20': ['a'] },
       anotherCountByDate: { '2026-11-20': 2 },
+      coupleAnotherCountByDate: {},
       moodByDate: {},
     });
   });

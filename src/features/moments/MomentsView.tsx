@@ -40,21 +40,21 @@ export function MomentsView({
   );
   const [copiedCardId, setCopiedCardId] = useState<string | null>(null);
 
+  const hasBoundariesStage = activeStage.minWeeks >= 26;
+
   const filters = useMemo(() => {
     const list: { id: MomentsFilterId; label: string }[] = [...BASE_FILTERS];
-    if (activeStage.id === '6-9m' || activeStage.id === '9-12m') {
+    if (hasBoundariesStage) {
       list.splice(5, 0, { id: 'boundaries', label: 'Boundaries' });
     }
     if (savedCardIds.length > 0) {
       list.splice(1, 0, { id: 'saved', label: `Saved (${savedCardIds.length})` });
     }
     return list;
-  }, [activeStage.id, savedCardIds.length]);
+  }, [hasBoundariesStage, savedCardIds.length]);
 
   const effectiveMoment: MomentsFilterId =
-    (selectedMoment === 'boundaries' &&
-      activeStage.id !== '6-9m' &&
-      activeStage.id !== '9-12m') ||
+    (selectedMoment === 'boundaries' && !hasBoundariesStage) ||
     (selectedMoment === 'saved' && savedCardIds.length === 0)
       ? 'all'
       : selectedMoment;

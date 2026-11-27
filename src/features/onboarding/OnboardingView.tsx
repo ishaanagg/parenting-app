@@ -56,12 +56,11 @@ export function OnboardingView({ onOpenSos }: OnboardingViewProps) {
         </div>
 
         <h1 className="font-serif text-[28px] leading-snug font-normal tracking-tight text-ink">
-          A steady breath at 3 AM. One calm practice a day.
+          Calm, grounded parenting—for your kid and your marriage.
         </h1>
         <p className="text-[15px] leading-relaxed text-muted">
-          Stage-aware guidance drawn from <span className="text-ink">Hunter, Gather, Parent</span>,{' '}
-          <span className="text-ink">Bringing Up Bébé</span>, and{' '}
-          <span className="text-ink">Philippa Perry</span>. Private on your device.
+          Stage-matched daily habits from birth to 3 years—raising a resilient, capable human while
+          protecting your partnership and personal life. Private on your device.
         </p>
       </div>
 

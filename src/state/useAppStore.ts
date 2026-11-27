@@ -5,6 +5,7 @@ import {
   STAGE_IDS,
   THEME_PREFERENCES,
   type ParentMood,
+  type PracticeTrack,
   type StageId,
   type ThemePreference,
 } from '../domain/types';
@@ -12,7 +13,7 @@ import { getParentDayKey, parseIsoDate, pruneDateRecord } from '../domain/stageE
 import { localStorageAdapter } from './storage';
 
 /** Bump when the persisted shape changes; add a branch in migratePersistedState. */
-export const STORE_VERSION = 5;
+export const STORE_VERSION = 6;
 export const RETENTION_DAYS = 30;
 const MAX_NAME_LENGTH = 40;
 
@@ -24,10 +25,12 @@ export interface PersistedAppState {
   manualStageOverride: StageId | null;
   themePreference: ThemePreference;
   savedCardIds: string[];
-  /** parentDayKey -> practice ids marked practiced */
+  /** parentDayKey -> practice ids marked practiced/done (across both kid & couple tracks) */
   practicedByDate: Record<string, string[]>;
-  /** parentDayKey -> how many times "Another" was tapped */
+  /** parentDayKey -> how many times "Another" was tapped on the kid card */
   anotherCountByDate: Record<string, number>;
+  /** parentDayKey -> how many times "Another" was tapped on the couple/self card */
+  coupleAnotherCountByDate: Record<string, number>;
   /** parentDayKey -> latest check-in (scoped per day so yesterday's mood never lingers) */
   moodByDate: Record<string, ParentMood>;
 }
@@ -49,7 +52,7 @@ export interface AppActions {
   completeOnboardingWithStage: (stageId: StageId) => void;
   markPracticed: (practiceId: string, dateKey?: string) => void;
   togglePracticed: (practiceId: string, dateKey?: string) => void;
-  showAnotherPractice: (dateKey?: string) => void;
+  showAnotherPractice: (dateKey?: string, track?: PracticeTrack) => void;
   setMood: (mood: ParentMood, dateKey?: string) => void;
   restoreFromBackup: (rawJson: string) => { ok: true } | { ok: false; error: string };
   resetProfile: () => void;
@@ -67,6 +70,7 @@ export const INITIAL_PERSISTED_STATE: PersistedAppState = {
   savedCardIds: [],
   practicedByDate: {},
   anotherCountByDate: {},
+  coupleAnotherCountByDate: {},
   moodByDate: {},
 };
 
@@ -143,6 +147,7 @@ export function migratePersistedState(raw: unknown, fromVersion: number): Persis
       : [],
     practicedByDate: sanitizeStringArrayRecord(raw.practicedByDate),
     anotherCountByDate,
+    coupleAnotherCountByDate: sanitizeCountRecord(raw.coupleAnotherCountByDate),
     moodByDate: sanitizeMoodRecord(raw.moodByDate),
   };
 }
@@ -165,6 +170,7 @@ export function createBackupJson(state: PersistedAppState): string {
       savedCardIds: state.savedCardIds,
       practicedByDate: state.practicedByDate,
       anotherCountByDate: state.anotherCountByDate,
+      coupleAnotherCountByDate: state.coupleAnotherCountByDate,
       moodByDate: state.moodByDate,
     },
   };
@@ -267,17 +273,31 @@ export const useAppStore = create<AppStore>()(
           };
         }),
 
-      showAnotherPractice: (dateKey = getParentDayKey()) =>
-        set((state) => ({
-          anotherCountByDate: pruneDateRecord(
-            {
-              ...state.anotherCountByDate,
-              [dateKey]: (state.anotherCountByDate[dateKey] ?? 0) + 1,
-            },
-            dateKey,
-            RETENTION_DAYS,
-          ),
-        })),
+      showAnotherPractice: (dateKey = getParentDayKey(), track = 'kid') =>
+        set((state) => {
+          if (track === 'couple') {
+            return {
+              coupleAnotherCountByDate: pruneDateRecord(
+                {
+                  ...state.coupleAnotherCountByDate,
+                  [dateKey]: (state.coupleAnotherCountByDate[dateKey] ?? 0) + 1,
+                },
+                dateKey,
+                RETENTION_DAYS,
+              ),
+            };
+          }
+          return {
+            anotherCountByDate: pruneDateRecord(
+              {
+                ...state.anotherCountByDate,
+                [dateKey]: (state.anotherCountByDate[dateKey] ?? 0) + 1,
+              },
+              dateKey,
+              RETENTION_DAYS,
+            ),
+          };
+        }),
 
       setMood: (mood, dateKey = getParentDayKey()) =>
         set((state) => ({
@@ -312,6 +332,7 @@ export const useAppStore = create<AppStore>()(
         savedCardIds: state.savedCardIds,
         practicedByDate: state.practicedByDate,
         anotherCountByDate: state.anotherCountByDate,
+        coupleAnotherCountByDate: state.coupleAnotherCountByDate,
         moodByDate: state.moodByDate,
       }),
     },

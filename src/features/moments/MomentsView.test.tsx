@@ -42,9 +42,9 @@ describe('MomentsView', () => {
 
     expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(screen.getByRole('button', { name: 'Boundaries' }));
-    expect(screen.getByText(/Food on the floor means the meal is pausing/i)).toBeInTheDocument();
+    expect(screen.getByText(/Calm physical limits beat loud warnings/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Bringing Up Bébé' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Calm Structure' })[0]!);
     expect(onOpenFramework).toHaveBeenCalledWith('le-cadre');
   });
 });

@@ -1,7 +1,25 @@
-export const STAGE_IDS = ['0-6w', '6-12w', '3-6m', '6-9m', '9-12m'] as const;
+export const STAGE_IDS = [
+  '0-6w',
+  '6-12w',
+  '3-6m',
+  '6-9m',
+  '9-12m',
+  '12-18m',
+  '18-24m',
+  '2-3y',
+] as const;
 export type StageId = (typeof STAGE_IDS)[number];
 
-export type BookFramework = 'hgp' | 'le-cadre' | 'perry';
+export type BookFramework =
+  | 'hgp'
+  | 'le-cadre'
+  | 'montessori-rie'
+  | 'perry'
+  | 'grit'
+  | 'whole-self'
+  | 'possums-data';
+
+export type PracticeTrack = 'kid' | 'couple';
 
 export type MomentTag =
   | '3am'
@@ -29,17 +47,23 @@ export interface StageDefinition {
   focusSummary: string;
 }
 
+export interface FrameworkSourceBook {
+  title: string;
+  author: string;
+}
+
 export interface FrameworkGuide {
   id: BookFramework;
   shortLabel: string;
-  bookTitle: string;
-  author: string;
+  themeTitle: string;
+  sourceBooks: FrameworkSourceBook[];
   coreIdea: string;
   pillars: string[];
 }
 
 export interface PracticeRep {
   id: string;
+  track?: PracticeTrack;
   stages: StageId[];
   framework: BookFramework;
   title: string;
@@ -79,4 +103,64 @@ export interface SupportLine {
   label: string;
   detail: string;
   href: string;
+}
+
+export type AgeGuideSectionId =
+  | 'developing'
+  | 'rhythm'
+  | 'yes-space'
+  | 'grit'
+  | 'dont-stress';
+
+export interface AgeGuideSection {
+  id: AgeGuideSectionId;
+  title: string;
+  framework: BookFramework;
+  bullets: [string, string, string];
+}
+
+export interface AgeGuide {
+  stageId: StageId;
+  headline: string;
+  keyShift: string;
+  sections: [
+    AgeGuideSection,
+    AgeGuideSection,
+    AgeGuideSection,
+    AgeGuideSection,
+    AgeGuideSection,
+  ];
+}
+
+export const HOW_TO_CATEGORIES = [
+  'crying-gas',
+  'sleep',
+  'tantrums',
+  'hitting-throwing',
+  'food',
+  'scrapes-fear',
+  'repair',
+] as const;
+export type HowToCategoryId = (typeof HOW_TO_CATEGORIES)[number];
+
+export interface HowToGuide {
+  id: string;
+  stages: StageId[];
+  categories: HowToCategoryId[];
+  framework: BookFramework;
+  title: string;
+  /** 1-line cue for when to reach for this play */
+  whenToUse: string;
+  /** 3 fast, numbered steps scannable in 10 seconds by a spouse */
+  quickSteps: [string, string, string];
+  /** Deeper 9 PM couch explanation */
+  whyItWorks: string;
+  /** Optional calm out-loud script */
+  sayOutLoud?: string;
+  /** Optional safety guardrail */
+  safetyNote?: string;
+  /** Optional badge such as "5% Emergency Only" or "Check First" */
+  badge?: string;
+  /** Optional 1-tap link to timer or breathing pacer */
+  action?: 'la-pause' | 'breathe';
 }

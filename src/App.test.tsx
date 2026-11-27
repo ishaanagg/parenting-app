@@ -11,7 +11,7 @@ describe('App full-journey integration', () => {
 
   it('allows 3 AM emergency SOS directly from onboarding before DOB is entered', () => {
     render(<App />);
-    expect(screen.getByText(/A steady breath at 3 AM/i)).toBeInTheDocument();
+    expect(screen.getByText(/Calm, grounded parenting/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Need help right now/i }));
     expect(screen.getByRole('dialog', { name: /Take one slow breath/i })).toBeInTheDocument();
@@ -30,14 +30,19 @@ describe('App full-journey integration', () => {
     expect(screen.getByRole('button', { name: /Settings and baby stage/i })).toBeInTheDocument();
   });
 
-  it('completes onboarding -> Today -> Moments -> FrameworkSheet -> Settings Day/Night -> SOS', async () => {
+  it('completes onboarding -> Today -> By Age -> How-To -> FrameworkSheet -> Settings -> Calm/3 AM pill', async () => {
     render(<App />);
 
-    // 1. Onboarding: pick 9-12 Months stage
+    // 1. Onboarding: pick 9-12 Months stage (verify toddler 2-3 Years stage exists)
+    expect(screen.getByRole('button', { name: /2–3 Years/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /9–12 Months/i }));
-    expect(screen.getByRole('heading', { name: /Early Autonomy/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Mobility & Separation/i })).toBeInTheDocument();
 
-    // 2. Open Settings, personalize names & switch to Day theme
+    // Both Kid & Marriage daily cards render on Today
+    expect(screen.getByRole('region', { name: /Today's Practice/i })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /For You and Your Marriage/i })).toBeInTheDocument();
+
+    // 2. Open Settings, personalize names & switch to Day / Night theme
     fireEvent.click(screen.getByRole('button', { name: /Settings and baby stage/i }));
     await waitFor(() =>
       expect(screen.getByRole('dialog', { name: /Settings & Backup/i })).toBeInTheDocument(),
@@ -55,25 +60,33 @@ describe('App full-journey integration', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Close settings/i }));
 
-    // Personalized header shows parent + baby name
+    // Personalized header + utility pill shows parent + baby name
     expect(screen.getByText(/Ishaan/i)).toBeInTheDocument();
-    expect(screen.getByText('Aarav')).toBeInTheDocument();
+    expect(screen.getByText(/Aarav · 9–12 Months/i)).toBeInTheDocument();
 
-    // 3. Navigate to Moments, see Boundaries chip for 9-12m, open Framework guide
-    fireEvent.click(screen.getByRole('button', { name: /^Moments$/i }));
-    expect(screen.getByRole('heading', { name: /^Moments$/i })).toBeInTheDocument();
+    // 3. Navigate to By Age cheat sheet and verify 9-12m stage overview renders
+    fireEvent.click(screen.getByRole('button', { name: /^By Age$/i }));
+    expect(screen.getByRole('heading', { name: /^By Age$/i })).toBeInTheDocument();
+    expect(screen.getByText(/Fast cruisers, big opinions/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /^Boundaries$/i }));
-    expect(screen.getByText(/Validate the feeling, hold the boundary/i)).toBeInTheDocument();
+    // 4. Navigate to How-To, filter by Tantrums & "No!", open plain-English Framework guide
+    fireEvent.click(screen.getByRole('button', { name: /^How-To$/i }));
+    expect(screen.getByRole('heading', { name: /^How-To$/i })).toBeInTheDocument();
 
-    fireEvent.click(screen.getAllByRole('button', { name: /Philippa Perry/i })[0]!);
+    fireEvent.click(screen.getByRole('button', { name: /^Tantrums & "No!"$/i }));
+    expect(screen.getByText(/Below Eye Level \+ 5-Second Validation/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Sturdy Boundaries/i })[0]!);
     expect(
-      screen.getByRole('dialog', { name: /The Book You Wish Your Parents Had Read/i }),
+      screen.getByRole('dialog', { name: /Sturdy Boundaries, Cycle-Breaking & Repair/i }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/Good Inside/i)).toBeInTheDocument();
     fireEvent.keyDown(document, { key: 'Escape' });
 
-    // 4. Open SOS from bottom nav
-    fireEvent.click(screen.getByRole('button', { name: /^SOS$/i }));
+    // 5. Open Calm / 3 AM support overlay from the persistent top header pill
+    fireEvent.click(
+      screen.getByRole('button', { name: /Calm timer and reset|3 AM calm support and timer/i }),
+    );
     expect(screen.getByRole('dialog', { name: /Take one slow breath/i })).toBeInTheDocument();
   });
 });

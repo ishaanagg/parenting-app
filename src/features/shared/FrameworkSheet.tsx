@@ -2,6 +2,7 @@ import { BookOpen, X } from 'lucide-react';
 import { FRAMEWORK_GUIDES } from '../../content/frameworks';
 import type { BookFramework } from '../../domain/types';
 import { useDialog } from './useDialog';
+import { useSwipeDownDismiss } from './useSwipeDownDismiss';
 
 interface FrameworkSheetProps {
   framework: BookFramework;
@@ -11,6 +12,7 @@ interface FrameworkSheetProps {
 export function FrameworkSheet({ framework, onClose }: FrameworkSheetProps) {
   const guide = FRAMEWORK_GUIDES[framework];
   const dialogRef = useDialog<HTMLDivElement>(onClose);
+  const swipe = useSwipeDownDismiss(onClose, dialogRef);
 
   return (
     <div
@@ -25,6 +27,8 @@ export function FrameworkSheet({ framework, onClose }: FrameworkSheetProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="framework-guide-title"
+        style={swipe.style}
+        {...swipe.handlers}
         className="max-h-[90dvh] w-full max-w-md space-y-4 overflow-y-auto rounded-t-3xl border-t border-line bg-surface p-5 pb-[max(2rem,env(safe-area-inset-bottom))] outline-none"
       >
         <div className="mx-auto h-1 w-10 rounded-full bg-line" aria-hidden="true" />
@@ -33,17 +37,16 @@ export function FrameworkSheet({ framework, onClose }: FrameworkSheetProps) {
           <div>
             <p className="inline-flex items-center gap-1.5 text-xs font-medium text-amber">
               <BookOpen className="h-3.5 w-3.5" />
-              Framework Guide
+              {guide.shortLabel}
             </p>
             <h2 id="framework-guide-title" className="mt-0.5 text-lg font-semibold text-ink">
-              {guide.bookTitle}
+              {guide.themeTitle}
             </h2>
-            <p className="text-xs text-muted">by {guide.author}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close framework guide"
+            aria-label="Close philosophy guide"
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-elevated text-muted"
           >
             <X className="h-4 w-4" />
@@ -62,6 +65,20 @@ export function FrameworkSheet({ framework, onClose }: FrameworkSheetProps) {
             </li>
           ))}
         </ul>
+
+        <div className="space-y-1.5 border-t border-line pt-3.5">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted">
+            Synthesized from
+          </p>
+          <ul className="space-y-1 text-xs leading-relaxed text-ink/90">
+            {guide.sourceBooks.map((book) => (
+              <li key={book.title}>
+                <span className="font-medium text-ink">{book.title}</span>{' '}
+                <span className="text-muted">— {book.author}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );

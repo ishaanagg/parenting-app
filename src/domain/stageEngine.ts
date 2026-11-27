@@ -1,6 +1,9 @@
 import type {
+  HowToCategoryId,
+  HowToGuide,
   MomentTag,
   PracticeRep,
+  PracticeTrack,
   StageDefinition,
   StageId,
   WisdomCard,
@@ -115,11 +118,15 @@ export function pickDailyPractice(params: {
   practices: readonly PracticeRep[];
   dateKey: string;
   offset?: number;
+  track?: PracticeTrack;
 }): PracticeRep | undefined {
-  const pool = params.practices.filter((p) => p.stages.includes(params.stageId));
+  const targetTrack = params.track ?? 'kid';
+  const pool = params.practices.filter(
+    (p) => (p.track ?? 'kid') === targetTrack && p.stages.includes(params.stageId),
+  );
   if (pool.length === 0) return undefined;
   const offset = Math.max(0, Math.floor(params.offset ?? 0));
-  return pool[(hashString(params.dateKey) + offset) % pool.length];
+  return pool[(hashString(`${params.dateKey}:${targetTrack}`) + offset) % pool.length];
 }
 
 /** Filters wisdom cards by current stage and optional moment tag. */
@@ -133,6 +140,20 @@ export function filterWisdomCards(params: {
     const matchesMoment =
       params.moment === 'all' || card.moments.includes(params.moment);
     return matchesStage && matchesMoment;
+  });
+}
+
+/** Filters unified How-To guides by current stage and optional situation category. */
+export function filterHowToGuides(params: {
+  stageId: StageId;
+  category: HowToCategoryId | 'all';
+  guides: readonly HowToGuide[];
+}): HowToGuide[] {
+  return params.guides.filter((guide) => {
+    const matchesStage = guide.stages.includes(params.stageId);
+    const matchesCategory =
+      params.category === 'all' || guide.categories.includes(params.category);
+    return matchesStage && matchesCategory;
   });
 }
 

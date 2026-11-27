@@ -120,6 +120,25 @@ describe('pickDailyPractice', () => {
       pickDailyPractice({ stageId: '9-12m', practices: single, dateKey: 'x' }),
     ).toBeUndefined();
   });
+
+  it('isolates kid vs couple practice tracks cleanly', () => {
+    const mixed: PracticeRep[] = [
+      makePractice('kid-only'),
+      { ...makePractice('couple-only'), track: 'couple' },
+    ];
+    expect(
+      pickDailyPractice({ stageId: '0-6w', practices: mixed, dateKey: '2026-11-25', track: 'kid' })
+        ?.id,
+    ).toBe('kid-only');
+    expect(
+      pickDailyPractice({
+        stageId: '0-6w',
+        practices: mixed,
+        dateKey: '2026-11-25',
+        track: 'couple',
+      })?.id,
+    ).toBe('couple-only');
+  });
 });
 
 describe('filterWisdomCards', () => {

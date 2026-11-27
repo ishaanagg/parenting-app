@@ -49,6 +49,7 @@ describe('SettingsSheet', () => {
       savedCardIds: [],
       practicedByDate: { '2026-11-25': ['rep-1'] },
       anotherCountByDate: {},
+      coupleAnotherCountByDate: {},
       moodByDate: {},
     });
 

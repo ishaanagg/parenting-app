@@ -9,182 +9,204 @@ export const WISDOM_CARDS: WisdomCard[] = [
     moments: ['3am', 'sleep'],
     title: 'Active sleep sounds like waking',
     insight:
-      'Young babies grunt, squirm, and even let out brief cries between sleep cycles while still asleep. Druckerman describes French parents pausing to observe rather than rushing in.',
+      'Young babies grunt, squirm, and even let out brief cries between sleep cycles while still asleep. Pausing briefly lets you observe before accidentally waking them.',
     tryNow:
-      'For grunts and stirring (not full crying), use the SOS La Pause timer and just listen. A hungry newborn should be fed.',
+      'For grunts and stirring (not full crying), use the La Pause timer and just listen. A hungry newborn should be fed.',
     action: 'la-pause',
   },
   {
-    id: 'w-lapause-3-12m',
-    stages: ['3-6m', '6-9m', '9-12m'],
+    id: 'w-lapause-3m-3y',
+    stages: ['3-6m', '6-9m', '9-12m', '12-18m', '18-24m', '2-3y'],
     framework: 'le-cadre',
     moments: ['3am', 'sleep'],
     title: 'Give sleep transitions a moment',
     insight:
-      'Between sleep cycles, older babies often fuss briefly while rolling or repositioning. Waiting a couple of minutes lets you hear whether they are resettling or truly calling for you.',
-    tryNow: 'Listen to the pitch of the sound for 2 minutes before opening the door.',
+      'Between sleep cycles, babies and toddlers often fuss or call out briefly while repositioning. Waiting 2–3 minutes lets you hear whether they are resettling on their own.',
+    tryNow: 'Listen to the trajectory of the sound for 2 minutes before opening the door.',
     action: 'la-pause',
   },
   {
-    id: 'w-separation-night-6-12m',
-    stages: ['6-9m', '9-12m'],
+    id: 'w-possums-abort-0-12m',
+    stages: ['0-6w', '6-12w', '3-6m', '6-9m', '9-12m'],
+    framework: 'possums-data',
+    moments: ['sleep', 'fussy'],
+    title: 'Stop fighting low sleep pressure in the dark',
+    insight:
+      'Dr. Pamela Douglas (Possums) notes that if settling turns into a 20+ minute battle of arching or popping awake, sleep drive simply isn’t high enough yet.',
+    tryNow:
+      'Abort calmly: step out into dim ambient light for 15–20 minutes of quiet reset, then try a fresh 5-minute settle.',
+  },
+  {
+    id: 'w-separation-night-6-18m',
+    stages: ['6-9m', '9-12m', '12-18m'],
     framework: 'perry',
     moments: ['3am', 'sleep'],
-    title: 'Standing in the crib is a check-in, not a setback',
+    title: 'Standing in the crib is a check-in, not broken sleep',
     insight:
-      'Around 7–10 months, separation awareness peaks alongside new motor skills. Waking and calling out often just means "Are you still there?"—not that sleep is broken.',
+      'Around 7–15 months, separation awareness peaks alongside pulling to stand. Wrestling them flat 20 times accidentally turns bedtime into a motor game.',
     tryNow:
-      'Offer a calm, quiet voice and a steady hand on their back for a moment before deciding whether to lift.',
+      'Sit quietly beside the crib, pat the mattress once ("Sleep time, I’m right here"), keep your voice boring, and guide down once drowsy.',
+  },
+  {
+    id: 'w-toddler-proactive-checkin-18m-3y',
+    stages: ['18-24m', '2-3y'],
+    framework: 'perry',
+    moments: ['sleep', 'boundaries'],
+    title: 'Flip bedtime stalling with a proactive check-in',
+    insight:
+      'Toddlers stall ("One more water! Don’t leave!") when separation feels uncertain. Promising to return—and keeping your word—removes their need to chase you.',
+    tryNow:
+      'Say warmly: "Stay cozy under covers—I’m putting three dishes in the sink and checking back on you in 2 minutes."',
   },
   {
     id: 'w-day-night-0-12w',
     stages: ['0-6w', '6-12w'],
-    framework: 'le-cadre',
+    framework: 'possums-data',
     moments: ['sleep', '3am'],
-    title: 'Keep night boring, day bright',
+    title: 'Keep night boring, morning bright',
     insight:
-      'Newborns don’t yet have a mature day–night clock. Calm, dim, quiet night feeds and natural daylight during the day gently orient their rhythm over time.',
-    tryNow: 'Skip bright lights and playful chatter at 3 AM; save eye-contact games for morning.',
+      'Newborns build circadian rhythm from two signals: abundant morning daylight/activity and dim, quiet, zero-chatter night feeds.',
+    tryNow: 'Skip bright lights and playful eye contact at 3 AM; get outside into natural light tomorrow morning.',
   },
   {
-    id: 'w-cadre-frame-6w-12m',
-    stages: ['6-12w', '3-6m', '6-9m', '9-12m'],
+    id: 'w-cadre-frame-3m-3y',
+    stages: ['3-6m', '6-9m', '9-12m', '12-18m', '18-24m', '2-3y'],
     framework: 'le-cadre',
     moments: ['sleep', 'feeding'],
-    title: 'A calm frame, not a rigid schedule',
+    title: 'Steady anchors protect your adult evening',
     insight:
-      'Le Cadre isn’t a military timetable. Druckerman describes a firm, calm frame—a few consistent anchors like meals, a wind-down, and bedtime—with lots of freedom inside it.',
-    tryNow: 'Pick one anchor to keep consistent today, like the same 2-minute wind-down before naps.',
+      'Once past the newborn stage, predictable meal and bedtime anchors (Le Cadre) help your child rest deeply and return 8 PM onward to your marriage and yourself.',
+    tryNow: 'Run the exact same short 3-step bedtime wind-down tonight, then clock off-duty together.',
   },
 
   // ── Triggers & 3 AM ───────────────────────────────────────────────────────
   {
     id: 'w-triggers-all',
-    stages: ['0-6w', '6-12w', '3-6m', '6-9m', '9-12m'],
+    stages: ['0-6w', '6-12w', '3-6m', '6-9m', '9-12m', '12-18m', '18-24m', '2-3y'],
     framework: 'perry',
     moments: ['3am', 'triggers', 'fussy'],
-    title: 'Your baby isn’t giving you a hard time',
+    title: 'A good kid having a hard time—not giving you one',
     insight:
-      'When we’re exhausted at 3 AM, crying can feel personal. Babies aren’t manipulating us—they’re having a hard time and need to borrow our calm.',
-    tryNow: 'Exhale longer than you inhale (4s in, 6s out) before you speak or lift.',
+      'Dr. Becky Kennedy & Philippa Perry remind us: when we’re depleted, crying or defiance feels personal, yet their downstairs survival brain simply needs a sturdy pilot.',
+    tryNow: 'Take two quick nasal inhales + one long slow mouth exhale (physiological sigh) before you speak.',
   },
   {
     id: 'w-ghosts-all',
-    stages: ['0-6w', '6-12w', '3-6m', '6-9m', '9-12m'],
+    stages: ['0-6w', '6-12w', '3-6m', '6-9m', '9-12m', '12-18m', '18-24m', '2-3y'],
     framework: 'perry',
     moments: ['triggers', 'repair'],
-    title: 'Notice when an old script fires',
+    title: 'Notice when an old childhood script fires',
     insight:
-      'Philippa Perry notes that when a baby’s cry triggers sudden anger or panic, it often echoes how our own distress was handled when we were small.',
-    tryNow: 'Ask silently: "Is this intensity about right now, or am I running on empty?"',
+      'Siegel & Perry show that outsized anger at a child’s whining or mess often echoes what we weren’t allowed to feel safely growing up. Spotting the echo breaks the cycle.',
+    tryNow: 'Ask silently: "Is this heat proportional to right now, or am I depleted / triggered?"',
   },
 
-  // ── Fussy & Togetherness ──────────────────────────────────────────────────
+  // ── Fussy, Tantrums & Togetherness ────────────────────────────────────────
   {
-    id: 'w-togetherness-0-6m',
-    stages: ['0-6w', '6-12w', '3-6m'],
+    id: 'w-togetherness-0-12m',
+    stages: ['0-6w', '6-12w', '3-6m', '6-9m', '9-12m'],
     framework: 'hgp',
     moments: ['fussy'],
-    title: 'Change the scenery, not the toy',
+    title: 'Change the sensory world, not the toy',
     insight:
-      'You don’t need to bounce, sing, and perform for hours. Stepping onto the porch, looking at leaves, or letting baby watch you cook often calms fussiness faster.',
-    tryNow: 'Carry baby to a window or outside for 3 minutes of quiet observation.',
+      'You don’t need to bounce and sing for hours. Stepping outside into fresh air or warm sink/bath water interrupts crying loops faster than extra stimulation.',
+    tryNow: 'Step onto the porch, balcony, or an open window together for 90 seconds of quiet air.',
   },
   {
-    id: 'w-autonomy-3-12m',
-    stages: ['3-6m', '6-9m', '9-12m'],
+    id: 'w-water-air-toddler-12m-3y',
+    stages: ['12-18m', '18-24m', '2-3y'],
     framework: 'hgp',
-    moments: ['fussy', 'boundaries'],
-    title: 'Let them wrestle with small frustrations',
+    moments: ['fussy', 'triggers'],
+    title: 'Add water or step outside—skip the lecture',
     insight:
-      'When baby grunts trying to reach a toy or roll over, jumping in too fast takes away their discovery. Calm presence beats constant rescuing.',
-    tryNow: 'Sit nearby quietly for 30 seconds while they try before offering help.',
+      'When a toddler’s downstairs brain floods at 5 PM, reasoning adds fuel. Sensory shifts reset their nervous system immediately.',
+    tryNow: 'Offer cold water through a straw, let them wash vegetables at the sink, or step outside barefoot.',
+  },
+  {
+    id: 'w-autonomy-3m-3y',
+    stages: ['3-6m', '6-9m', '9-12m', '12-18m', '18-24m', '2-3y'],
+    framework: 'grit',
+    moments: ['fussy', 'boundaries'],
+    title: 'Frustration is the gym where grit grows',
+    insight:
+      'Wendy Mogel & Jessica Lahey point out that rescuing children from every stuck block, zipper, or minor scrape steals earned confidence.',
+    tryNow: 'Stay nearby with a calm face for 30 seconds while they wrestle with it before scaffolding.',
   },
   {
     id: 'w-calm-contagious-all',
-    stages: ['0-6w', '6-12w', '3-6m', '6-9m', '9-12m'],
+    stages: ['0-6w', '6-12w', '3-6m', '6-9m', '9-12m', '12-18m', '18-24m', '2-3y'],
     framework: 'hgp',
     moments: ['fussy', 'triggers'],
     title: 'Drop your volume to lower theirs',
     insight:
-      'In Hunter, Gather, Parent, Michaeleen Doucleff highlights how staying quiet and unhurried during distress helps children settle far faster than frantic soothing.',
-    tryNow: 'Unclench your jaw, slow your steps, and speak one notch quieter.',
+      'In Hunt, Gather, Parent, Inuit parents never match a child’s volume—lowering your voice and slowing your body signals safety faster than stern lectures.',
+    tryNow: 'Unclench your jaw, crouch below eye level, and speak one notch quieter.',
   },
 
   // ── Feeding ───────────────────────────────────────────────────────────────
   {
     id: 'w-feeding-feelings-0-12w',
     stages: ['0-6w', '6-12w'],
-    framework: 'perry',
+    framework: 'possums-data',
     moments: ['feeding', 'triggers', '3am'],
-    title: 'Feeding stirs up big feelings—notice yours',
+    title: 'Fed + calm parents beats feeding dogma',
     insight:
-      'Breast, bottle, or both, feeds can bring up pressure about doing it “right.” Perry’s idea applies: notice your own feelings so they don’t spill into the moment. A fed, held baby is the goal.',
+      'Emily Oster’s data review is clear: whether breast, formula, or combo-feeding, a fed baby and rested, sane parents are what drive thriving outcomes.',
     tryNow:
-      'Before the next feed, drop your shoulders and take one slow exhale. For feeding worries, talk to your pediatrician or a lactation consultant.',
+      'Drop your shoulders before the next feed. For latch or reflux pain, lean on your pediatrician or lactation pro.',
   },
   {
     id: 'w-feeding-presence-3-6m',
     stages: ['3-6m'],
     framework: 'hgp',
     moments: ['feeding'],
-    title: 'Treat feeds as quiet togetherness',
+    title: 'Quiet corner for distracted 4-month feeds',
     insight:
-      'At 3–6 months babies get easily distracted by lights and movement. A calm, low-stimulation spot turns feeding back into simple connection.',
-    tryNow: 'Silence notifications or step into a quieter corner for one feed today.',
+      'At 3–6 months babies suddenly wake up to every sound and movement in the room, pulling off repeatedly mid-feed.',
+    tryNow: 'Step into a calm, low-distraction spot for daytime feeds rather than pressuring them to finish.',
   },
   {
-    id: 'w-food-6-12m',
-    stages: ['6-9m', '9-12m'],
+    id: 'w-food-6m-3y',
+    stages: ['6-9m', '9-12m', '12-18m', '18-24m', '2-3y'],
     framework: 'le-cadre',
-    moments: ['feeding'],
-    title: 'Taste is learned through calm repetition',
+    moments: ['feeding', 'boundaries'],
+    title: 'You decide what’s served; they decide how much',
     insight:
-      'Druckerman describes French parents offering vegetables again and again, calmly and without pressure. A refusal today is just information, not failure.',
+      'French food culture avoids short-order "kid meals" and pressure. Serving varied family food alongside one familiar staple builds lifelong palate curiosity.',
     tryNow:
-      'Put a tiny, soft, finger-sized portion on their tray and eat yours calmly alongside them.',
-  },
-  {
-    id: 'w-family-table-6-12m',
-    stages: ['6-9m', '9-12m'],
-    framework: 'hgp',
-    moments: ['feeding', 'fussy'],
-    title: 'Eat together rather than performing',
-    insight:
-      'Babies learn how meals work by watching you eat real food—not by watching an airplane-spoon show. Shared meals build calm participation.',
-    tryNow: 'Pull the highchair right up to the table and eat your own plate while they explore theirs.',
+      'Put a tiny, no-pressure taste of the family meal on their plate and enjoy your own dinner with your spouse.',
   },
 
   // ── Repair & Boundaries ───────────────────────────────────────────────────
   {
     id: 'w-repair-all',
-    stages: ['0-6w', '6-12w', '3-6m', '6-9m', '9-12m'],
+    stages: ['0-6w', '6-12w', '3-6m', '6-9m', '9-12m', '12-18m', '18-24m', '2-3y'],
     framework: 'perry',
     moments: ['repair', 'triggers'],
-    title: 'Rupture and repair beats perfection',
+    title: 'Clean repair models real accountability',
     insight:
-      'Every parent loses patience sometimes. Perry’s point: what matters most isn’t never getting it wrong—it’s noticing and reconnecting afterward.',
-    tryNow: 'Say out loud: "I got overwhelmed earlier. You’re safe, and I’m here."',
+      'Every parent snaps sometimes. Owning your part cleanly—without blaming your child for making you yell—teaches humility and emotional safety.',
+    tryNow: 'Say simply: "I raised my voice earlier because I was overwhelmed. That wasn’t fair to you, and I’m sorry."',
   },
   {
-    id: 'w-boundaries-6-12m',
-    stages: ['6-9m', '9-12m'],
+    id: 'w-5sec-boundaries-6m-3y',
+    stages: ['6-9m', '9-12m', '12-18m', '18-24m', '2-3y'],
     framework: 'perry',
     moments: ['fussy', 'boundaries', 'triggers', 'repair'],
-    title: 'Validate the feeling, hold the boundary',
+    title: 'The 5-Second Validation Rule',
     insight:
-      'When they cry because you took away your glasses or phone, you don’t have to give in or scold. The boundary and their frustration can both exist.',
-    tryNow: 'Say: "You’re mad I took that away. It’s okay to be mad; I’m keeping it safe."',
+      'Validating feelings doesn’t mean holding a 15-minute debate. Name the emotion in under 8 words, hold the boundary like a sturdy pilot, and move forward.',
+    tryNow: 'Say once: "You’re mad park time is over, AND it’s time to go"—then carry or walk calmly to the car.',
   },
   {
-    id: 'w-throwing-food-6-12m',
-    stages: ['6-9m', '9-12m'],
-    framework: 'le-cadre',
+    id: 'w-throwing-hitting-6m-3y',
+    stages: ['6-9m', '9-12m', '12-18m', '18-24m', '2-3y'],
+    framework: 'montessori-rie',
     moments: ['boundaries', 'feeding'],
-    title: 'Food on the floor means the meal is pausing',
+    title: 'Calm physical limits beat loud warnings',
     insight:
-      'Dropping food is part gravity experiment, part "I’m done." Big reactions ("No! Don’t throw!") accidentally turn it into a thrilling game.',
+      'Janet Lansbury notes that big gasps or angry countdowns feel like drama to a toddler. Quietly blocking a hit or ending a food-throwing meal works fastest.',
     tryNow:
-      'Keep your face neutral, say once "Food stays on the tray," and if it repeats, calmly end the meal without a lecture.',
+      'Keep your face neutral, block the hand or remove the plate once: "I won’t let you throw that."',
   },
 ];

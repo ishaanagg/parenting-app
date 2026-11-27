@@ -11,6 +11,7 @@ import {
 import { createBackupJson, useAppStore } from '../../state/useAppStore';
 import { useActiveStage } from '../shared/useActiveStage';
 import { useDialog } from '../shared/useDialog';
+import { useSwipeDownDismiss } from '../shared/useSwipeDownDismiss';
 
 interface SettingsSheetProps {
   onClose: () => void;
@@ -31,6 +32,7 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
   const resetProfile = useAppStore((s) => s.resetProfile);
 
   const dialogRef = useDialog<HTMLDivElement>(onClose);
+  const swipe = useSwipeDownDismiss(onClose, dialogRef);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [parentInput, setParentInput] = useState(parentName);
@@ -136,6 +138,8 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
+        style={swipe.style}
+        {...swipe.handlers}
         className="max-h-[90dvh] w-full max-w-md space-y-5 overflow-y-auto rounded-t-3xl border-t border-line bg-surface p-5 pb-[max(2rem,env(safe-area-inset-bottom))] outline-none"
       >
         <div className="mx-auto h-1 w-10 rounded-full bg-line" aria-hidden="true" />
