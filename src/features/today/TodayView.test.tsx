@@ -17,6 +17,13 @@ describe('TodayView', () => {
     render(<TodayView onOpenStagePicker={vi.fn()} onOpenSos={vi.fn()} />);
     expect(screen.getByText(/How are you holding up/i)).toBeInTheDocument();
 
+    // Expand "Why this works"
+    fireEvent.click(screen.getByRole('button', { name: /Why this works/i }));
+    expect(screen.getByRole('button', { name: /Why this works/i })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+
     fireEvent.click(screen.getByText(/Mark practiced/i));
     expect(screen.getByText(/Practiced today/i)).toBeInTheDocument();
     expect(screen.getByText(/1 of 5 fourth trimester practices tried recently/i)).toBeInTheDocument();
@@ -32,6 +39,13 @@ describe('TodayView', () => {
   it('"Another" always rotates and keeps the practiced acknowledgement', () => {
     render(<TodayView onOpenStagePicker={vi.fn()} onOpenSos={vi.fn()} />);
     const first = getPracticeTitle();
+
+    // Expand "Why this works"
+    fireEvent.click(screen.getByRole('button', { name: /Why this works/i }));
+    expect(screen.getByRole('button', { name: /Why this works/i })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
 
     fireEvent.click(screen.getByText(/Mark practiced/i));
     const another = screen.getByRole('button', { name: /Show another practice/i });

@@ -1,7 +1,11 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createBackupJson, useAppStore } from '../../state/useAppStore';
 import { SettingsSheet } from './SettingsSheet';
+
+vi.mock('../../state/dailyBackup', () => ({
+  listDailyBackups: vi.fn().mockResolvedValue([]),
+}));
 
 describe('SettingsSheet', () => {
   beforeEach(() => {
@@ -9,7 +13,7 @@ describe('SettingsSheet', () => {
     useAppStore.getState().completeOnboardingWithStage('0-6w');
   });
 
-  it('saves parent name, baby name, and DOB', () => {
+  it('saves parent name, baby name, DOB, and appearance preference', async () => {
     render(<SettingsSheet onClose={vi.fn()} />);
 
     fireEvent.change(screen.getByLabelText(/Your name/i), {
@@ -22,14 +26,18 @@ describe('SettingsSheet', () => {
       target: { value: '2026-10-01' },
     });
     fireEvent.click(screen.getByRole('button', { name: /^Save$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Day$/i }));
 
-    const state = useAppStore.getState();
-    expect(state.parentName).toBe('Ishaan');
-    expect(state.babyName).toBe('Aarav');
-    expect(state.babyDob).toBe('2026-10-01');
+    await waitFor(() => {
+      const state = useAppStore.getState();
+      expect(state.parentName).toBe('Ishaan');
+      expect(state.babyName).toBe('Aarav');
+      expect(state.babyDob).toBe('2026-10-01');
+      expect(state.themePreference).toBe('day');
+    });
   });
 
-  it('restores a pasted backup JSON', () => {
+  it('restores a pasted backup JSON', async () => {
     const backup = createBackupJson({
       hasCompletedOnboarding: true,
       parentName: 'Maya',
@@ -49,7 +57,9 @@ describe('SettingsSheet', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: /Restore pasted backup/i }));
 
-    expect(screen.getByText(/Backup restored on this device/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Backup restored on this device/i)).toBeInTheDocument();
+    });
     expect(useAppStore.getState().parentName).toBe('Maya');
     expect(useAppStore.getState().babyName).toBe('Zara');
   });
