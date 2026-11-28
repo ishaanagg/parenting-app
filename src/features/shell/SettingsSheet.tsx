@@ -20,10 +20,12 @@ interface SettingsSheetProps {
 export function SettingsSheet({ onClose }: SettingsSheetProps) {
   const { activeStage, isBrowsing } = useActiveStage();
   const parentName = useAppStore((s) => s.parentName);
+  const partnerName = useAppStore((s) => s.partnerName);
   const babyName = useAppStore((s) => s.babyName);
   const babyDob = useAppStore((s) => s.babyDob);
   const themePreference = useAppStore((s) => s.themePreference);
   const setParentName = useAppStore((s) => s.setParentName);
+  const setPartnerName = useAppStore((s) => s.setPartnerName);
   const setBabyName = useAppStore((s) => s.setBabyName);
   const setBabyDob = useAppStore((s) => s.setBabyDob);
   const setManualStage = useAppStore((s) => s.setManualStage);
@@ -36,6 +38,7 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [parentInput, setParentInput] = useState(parentName);
+  const [partnerInput, setPartnerInput] = useState(partnerName);
   const [babyInput, setBabyInput] = useState(babyName);
   const [dobInput, setDobInput] = useState(babyDob ?? '');
   const [savedNotice, setSavedNotice] = useState(false);
@@ -65,6 +68,7 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     setParentName(parentInput);
+    setPartnerName(partnerInput);
     setBabyName(babyInput);
     setBabyDob(dobInput || null);
     upsertTodayBackup(useAppStore.getState()).catch(() => {});
@@ -102,6 +106,7 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
     if (res.ok) {
       const next = useAppStore.getState();
       setParentInput(next.parentName);
+      setPartnerInput(next.partnerName);
       setBabyInput(next.babyName);
       setDobInput(next.babyDob ?? '');
       setRestoreText('');
@@ -145,20 +150,20 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
         <div className="mx-auto h-1 w-10 rounded-full bg-line" aria-hidden="true" />
 
         <div className="flex items-center justify-between">
-          <h2 id="settings-title" className="text-base font-semibold text-ink">
+          <h2 id="settings-title" className="font-serif text-xl font-normal text-ink">
             Settings &amp; Backup
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close settings"
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-elevated text-muted"
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line bg-elevated/80 text-muted transition active:scale-[0.95] active:text-ink after:absolute after:-inset-1"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Profile: Your Name, Baby Name, Baby DOB */}
+        {/* Profile: 2x2 Aligned Form Grid + Full-Width Save */}
         <form onSubmit={handleSaveProfile} className="space-y-3">
           <div className="grid grid-cols-2 gap-2.5">
             <div className="space-y-1">
@@ -169,10 +174,27 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
                 id="settings-parent-name"
                 type="text"
                 maxLength={40}
+                autoComplete="given-name"
                 placeholder="Optional"
                 value={parentInput}
                 onChange={(e) => setParentInput(e.target.value)}
-                className="min-h-[48px] w-full rounded-xl border border-line bg-canvas px-3 text-base text-ink placeholder:text-muted/50 focus:border-amber focus:outline-none"
+                className="h-11 w-full rounded-xl border border-line bg-canvas px-3 text-base text-ink placeholder:text-muted/50 focus:border-amber focus:outline-none"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="settings-partner-name" className="block text-xs text-muted">
+                Spouse’s name
+              </label>
+              <input
+                id="settings-partner-name"
+                type="text"
+                maxLength={40}
+                autoComplete="off"
+                placeholder="Optional"
+                value={partnerInput}
+                onChange={(e) => setPartnerInput(e.target.value)}
+                className="h-11 w-full rounded-xl border border-line bg-canvas px-3 text-base text-ink placeholder:text-muted/50 focus:border-amber focus:outline-none"
               />
             </div>
 
@@ -184,41 +206,41 @@ export function SettingsSheet({ onClose }: SettingsSheetProps) {
                 id="settings-baby-name"
                 type="text"
                 maxLength={40}
+                autoComplete="off"
                 placeholder="Optional"
                 value={babyInput}
                 onChange={(e) => setBabyInput(e.target.value)}
-                className="min-h-[48px] w-full rounded-xl border border-line bg-canvas px-3 text-base text-ink placeholder:text-muted/50 focus:border-amber focus:outline-none"
+                className="h-11 w-full rounded-xl border border-line bg-canvas px-3 text-base text-ink placeholder:text-muted/50 focus:border-amber focus:outline-none"
               />
             </div>
-          </div>
 
-          <div className="space-y-1">
-            <label htmlFor="edit-dob" className="block text-xs text-muted">
-              Baby’s birth date (stage updates automatically each week)
-            </label>
-            <div className="flex gap-2">
+            <div className="space-y-1">
+              <label htmlFor="edit-dob" className="block text-xs text-muted">
+                Baby’s birth date
+              </label>
               <input
                 id="edit-dob"
                 type="date"
                 max={getDateKey()}
                 value={dobInput}
                 onChange={(e) => setDobInput(e.target.value)}
-                className="min-h-[48px] flex-1 rounded-xl border border-line bg-canvas px-3 text-base text-ink focus:border-amber focus:outline-none"
+                className="h-11 w-full rounded-xl border border-line bg-canvas px-3 text-base text-ink focus:border-amber focus:outline-none"
               />
-              <button
-                type="submit"
-                className="inline-flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl bg-amber px-4 text-sm font-semibold text-on-amber"
-              >
-                {savedNotice ? (
-                  <>
-                    <Check className="h-4 w-4" /> Saved
-                  </>
-                ) : (
-                  'Save'
-                )}
-              </button>
             </div>
           </div>
+
+          <button
+            type="submit"
+            className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-amber px-4 text-sm font-semibold text-on-amber transition active:scale-[0.99]"
+          >
+            {savedNotice ? (
+              <>
+                <Check className="h-4 w-4" /> Saved
+              </>
+            ) : (
+              'Save'
+            )}
+          </button>
         </form>
 
         {/* Baby Stage Selector */}

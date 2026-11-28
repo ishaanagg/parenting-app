@@ -42,6 +42,7 @@ describe('SettingsSheet', () => {
     const backup = createBackupJson({
       hasCompletedOnboarding: true,
       parentName: 'Maya',
+      partnerName: 'Dev',
       babyName: 'Zara',
       babyDob: '2026-09-01',
       manualStageOverride: null,
@@ -51,6 +52,11 @@ describe('SettingsSheet', () => {
       anotherCountByDate: {},
       coupleAnotherCountByDate: {},
       moodByDate: {},
+      pinnedHouseRuleIds: ['rule-code-yellow'],
+      customHouseRules: [],
+      couplePromptOffset: 0,
+      coupleCheckInByWeek: {},
+      personalTimeByWeek: {},
     });
 
     render(<SettingsSheet onClose={vi.fn()} />);

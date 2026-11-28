@@ -21,15 +21,6 @@ export type BookFramework =
 
 export type PracticeTrack = 'kid' | 'couple';
 
-export type MomentTag =
-  | '3am'
-  | 'fussy'
-  | 'sleep'
-  | 'feeding'
-  | 'boundaries'
-  | 'triggers'
-  | 'repair';
-
 export const PARENT_MOODS = ['steady', 'tired', 'touched-out', 'triggered'] as const;
 export type ParentMood = (typeof PARENT_MOODS)[number];
 
@@ -70,17 +61,6 @@ export interface PracticeRep {
   prompt: string;
   whyItWorks: string;
   safetyNote?: string;
-}
-
-export interface WisdomCard {
-  id: string;
-  stages: StageId[];
-  framework: BookFramework;
-  moments: MomentTag[];
-  title: string;
-  insight: string;
-  tryNow: string;
-  action?: 'la-pause' | 'breathe';
 }
 
 export interface SosCryCue {
@@ -163,4 +143,32 @@ export interface HowToGuide {
   badge?: string;
   /** Optional 1-tap link to timer or breathing pacer */
   action?: 'la-pause' | 'breathe';
+}
+
+export interface HouseRulePreset {
+  id: string;
+  stages: StageId[];
+  framework: BookFramework;
+  rule: string;
+  why: string;
+}
+
+export interface CoupleCheckInPrompt {
+  id: string;
+  framework: BookFramework;
+  connectionQuestion: string;
+  ownershipCheck: string;
+}
+
+export const PERSONAL_TIME_CHIPS = [
+  { id: 'workout', label: 'Workout / Run' },
+  { id: 'hobby', label: 'Hobby / Build' },
+  { id: 'friends', label: 'Friends' },
+  { id: 'solo-quiet', label: 'Solo Quiet' },
+] as const;
+export type PersonalTimeChipId = (typeof PERSONAL_TIME_CHIPS)[number]['id'];
+
+export interface WeeklyPersonalTime {
+  self: PersonalTimeChipId[];
+  partner: PersonalTimeChipId[];
 }

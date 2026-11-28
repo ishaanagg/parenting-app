@@ -1,23 +1,34 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
-  Bookmark,
+  Briefcase,
   Check,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   Heart,
   HeartHandshake,
   Moon,
+  Play,
   RefreshCw,
-  Share2,
   ShieldCheck,
+  Sun,
 } from 'lucide-react';
-import { FRAMEWORK_LABELS } from '../../content/frameworks';
 import { PRACTICES } from '../../content/practices';
-import { getParentDayKey, isNightHours, pickDailyPractice } from '../../domain/stageEngine';
+import {
+  getParentDayKey,
+  isAfterWorkHours,
+  isNightHours,
+  pickDailyPractice,
+} from '../../domain/stageEngine';
 import type { BookFramework, ParentMood, PracticeRep } from '../../domain/types';
 import { useAppStore } from '../../state/useAppStore';
 import { shareOrCopy } from '../shared/shareText';
 import { TopUtilityRow } from '../shared/TopUtilityRow';
+import {
+  BookmarkIconButton,
+  PhilosophyTagButton,
+  ShareIconButton,
+} from '../shared/uiPrimitives';
 import { useActiveStage } from '../shared/useActiveStage';
 import { useNow } from '../shared/useNow';
 import { formatSeconds } from '../sos/SosOverlay';
@@ -112,48 +123,17 @@ function DailyPracticeCard({
   return (
     <section
       aria-label={ariaLabel}
-      className="space-y-4 rounded-3xl bg-surface p-5 ring-1 ring-line"
+      className="space-y-4 rounded-2xl bg-surface p-5 ring-1 ring-line"
     >
-      <div className="flex items-center justify-between gap-2">
-        <span className={`flex items-center gap-1.5 text-xs tracking-widest uppercase ${kickerColor}`}>
-          {accentTone === 'sage' && <Heart className="h-3.5 w-3.5" aria-hidden="true" />}
-          {kicker}
+      {/* Uniform 26px Top Metadata Row: Kicker on left, Philosophy Capsule flush on right */}
+      <div className="flex min-h-[26px] items-center justify-between gap-2.5">
+        <span
+          className={`inline-flex min-w-0 items-center gap-1.5 text-[11px] font-semibold tracking-wider uppercase ${kickerColor}`}
+        >
+          {accentTone === 'sage' && <Heart className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
+          <span className="ui-pill-label truncate">{kicker}</span>
         </span>
-        <div className="flex items-center gap-0.5">
-          <button
-            type="button"
-            aria-label={isSaved ? bookmarkLabels.remove : bookmarkLabels.save}
-            aria-pressed={isSaved}
-            onClick={onToggleSaved}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted transition active:text-amber"
-          >
-            <Bookmark
-              aria-hidden="true"
-              className={`h-4 w-4 ${isSaved ? 'fill-amber text-amber' : ''}`}
-            />
-          </button>
-          <button
-            type="button"
-            aria-label={shareLabel}
-            onClick={onShare}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted transition active:text-ink"
-          >
-            {isCopied ? (
-              <Check aria-hidden="true" className="h-4 w-4 text-sage" />
-            ) : (
-              <Share2 aria-hidden="true" className="h-4 w-4" />
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => onOpenFramework?.(practice.framework)}
-            className="-my-2 inline-flex min-h-[44px] items-center"
-          >
-            <span className="rounded-full bg-elevated px-2.5 py-1 text-xs text-muted transition active:text-ink">
-              {FRAMEWORK_LABELS[practice.framework]}
-            </span>
-          </button>
-        </div>
+        <PhilosophyTagButton framework={practice.framework} onOpenFramework={onOpenFramework} />
       </div>
 
       <div key={practice.id} className="animate-calm-in space-y-2.5">
@@ -167,71 +147,88 @@ function DailyPracticeCard({
             <span>{practice.safetyNote}</span>
           </p>
         )}
-
-        <button
-          type="button"
-          aria-label={whyAriaLabel}
-          aria-expanded={whyOpen}
-          aria-controls={whyRegionId}
-          onClick={onToggleWhy}
-          className="-my-1 inline-flex min-h-[44px] items-center gap-1.5 text-xs font-medium text-muted transition active:text-ink"
-        >
-          {whyOpen ? (
-            <ChevronUp aria-hidden="true" className="h-3.5 w-3.5" />
-          ) : (
-            <ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
-          )}
-          Why this works
-        </button>
-        {whyOpen && (
-          <p
-            id={whyRegionId}
-            className="border-l-2 border-line pl-3.5 text-sm leading-relaxed text-muted"
-          >
-            {practice.whyItWorks}
-          </p>
-        )}
       </div>
 
       {practicedAnotherInTrack && (
-        <p className="text-sm text-sage">✓ You already did one today. This one’s a bonus.</p>
+        <p className="text-xs font-medium text-sage">
+          ✓ You already did one today. This one’s a bonus.
+        </p>
       )}
 
-      <div className="flex gap-2.5 pt-0.5">
+      {/* Primary Commitment Row: Generous width so button labels never wrap */}
+      <div className="flex items-center gap-2.5">
         <button
           type="button"
           onClick={onTogglePracticed}
           aria-pressed={isPracticed}
-          className={`flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold transition active:scale-[0.98] ${
+          className={`flex h-11 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold whitespace-nowrap transition active:scale-[0.98] ${
             isPracticed
-              ? 'border border-sage/40 bg-sage/15 text-sage'
+              ? 'border border-sage/45 bg-sage/15 text-sage'
               : accentTone === 'amber'
                 ? 'bg-amber text-on-amber'
                 : 'border border-sage/45 bg-sage/15 text-sage'
           }`}
         >
-          <Check aria-hidden="true" className="h-4 w-4" />
-          {isPracticed ? doneButtonLabels.active : doneButtonLabels.idle}
+          <Check aria-hidden="true" className="h-4 w-4 shrink-0" />
+          <span>{isPracticed ? doneButtonLabels.active : doneButtonLabels.idle}</span>
         </button>
 
         <button
           type="button"
           onClick={onAnother}
           aria-label={anotherAriaLabel}
-          className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-2xl border border-line bg-elevated px-3.5 text-xs font-medium text-muted transition active:border-amber active:text-ink"
+          className="flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-line bg-elevated/80 px-3.5 text-xs font-medium whitespace-nowrap text-muted transition active:scale-[0.98] active:border-amber active:text-ink"
         >
-          <RefreshCw aria-hidden="true" className="h-3.5 w-3.5" />
+          <RefreshCw aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
           <span>Another</span>
           {poolLength > 1 && (
-            <span className="tabular-nums text-muted/75">
+            <span className="tabular-nums text-muted/80">
               {practiceIndex}/{poolLength}
             </span>
           )}
         </button>
       </div>
 
+      {whyOpen && (
+        <p
+          id={whyRegionId}
+          className="border-l-2 border-line pl-3.5 text-sm leading-relaxed text-muted"
+        >
+          {practice.whyItWorks}
+        </p>
+      )}
+
+      {/* Standardized Card Footer: Disclosure on left, 36px Save + Share circles flush on right */}
+      <footer className="flex items-center justify-between gap-3 border-t border-line/65 pt-3">
+        <button
+          type="button"
+          aria-label={whyAriaLabel}
+          aria-expanded={whyOpen}
+          aria-controls={whyRegionId}
+          onClick={onToggleWhy}
+          className="relative inline-flex h-9 items-center gap-1.5 text-xs font-medium text-muted transition active:text-ink after:absolute after:-inset-y-1 after:inset-x-0"
+        >
+          <ChevronRight
+            aria-hidden="true"
+            className={`h-3.5 w-3.5 shrink-0 text-amber transition-transform duration-200 motion-reduce:transition-none ${
+              whyOpen ? 'rotate-90' : ''
+            }`}
+          />
+          <span>Why this works</span>
+        </button>
+
+        <div className="flex items-center gap-2">
+          <BookmarkIconButton
+            saved={isSaved}
+            label={isSaved ? bookmarkLabels.remove : bookmarkLabels.save}
+            onToggle={onToggleSaved}
+          />
+          <ShareIconButton copied={isCopied} label={shareLabel} onShare={onShare} />
+        </div>
+      </footer>
+
       {triedCount > 0 && (
-        <p className="text-xs text-muted/90">
+        <p className="text-xs text-muted/85">
           {triedCount} of {poolLength} {stageNoun} tried recently
         </p>
       )}
@@ -248,9 +245,32 @@ export function TodayView({
   const { activeStage, isBeyondContent } = useActiveStage();
   const dateKey = getParentDayKey(now);
   const night = isNightHours(now);
+  const deepNight = now.getHours() >= 23 || now.getHours() < 6;
+  const afterWork = isAfterWorkHours(now);
   const [kidWhyOpen, setKidWhyOpen] = useState(false);
   const [coupleWhyOpen, setCoupleWhyOpen] = useState(false);
+  const [showDaytimeAtNight, setShowDaytimeAtNight] = useState(false);
   const [sharedId, setSharedId] = useState<string | null>(null);
+  const [sighStep, setSighStep] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (sighStep === null) return;
+    if (sighStep >= 16) {
+      setSighStep(null);
+      return;
+    }
+    const id = window.setTimeout(() => setSighStep((s) => (s === null ? null : s + 1)), 1000);
+    return () => window.clearTimeout(id);
+  }, [sighStep]);
+
+  const sighCue = useMemo(() => {
+    if (sighStep === null) return null;
+    const secInCycle = sighStep % 8;
+    const cycleNum = Math.floor(sighStep / 8) + 1;
+    if (secInCycle < 2) return `Sigh ${cycleNum}/2 · Deep inhale through nose...`;
+    if (secInCycle === 2) return `Sigh ${cycleNum}/2 · Quick second top-off sniff!`;
+    return `Sigh ${cycleNum}/2 · Long, slow mouth exhale (${8 - secInCycle}s)...`;
+  }, [sighStep]);
 
   const parentName = useAppStore((s) => s.parentName);
   const babyName = useAppStore((s) => s.babyName);
@@ -297,13 +317,16 @@ export function TodayView({
     track: 'couple',
   });
 
-  const kidPracticeIndex = kidPractice
-    ? kidStagePractices.findIndex((p) => p.id === kidPractice.id) + 1
-    : 0;
+  // 1-based position within today's rotation so the first card of the day always starts at 1/N
+  const kidPracticeIndex =
+    kidPractice && kidStagePractices.length > 0
+      ? (kidAnotherCount % kidStagePractices.length) + 1
+      : 0;
 
-  const couplePracticeIndex = couplePractice
-    ? coupleStagePractices.findIndex((p) => p.id === couplePractice.id) + 1
-    : 0;
+  const couplePracticeIndex =
+    couplePractice && coupleStagePractices.length > 0
+      ? (coupleAnotherCount % coupleStagePractices.length) + 1
+      : 0;
 
   const allTriedIds = useMemo(
     () => new Set(Object.values(practicedByDate).flat()),
@@ -345,19 +368,21 @@ export function TodayView({
     });
   };
 
+  const showDailyCards = !deepNight || showDaytimeAtNight;
+
   return (
-    <div className="animate-calm-in space-y-5">
+    <div className="animate-calm-in space-y-4">
       <header className="space-y-3">
         <TopUtilityRow onOpenStagePicker={onOpenStagePicker} onOpenSos={onOpenSos} />
         <div>
-          <p className="text-xs tracking-widest uppercase text-muted">
+          <p className="text-[11px] font-semibold tracking-widest uppercase text-muted">
             {night ? 'Quiet Night' : 'Today'}
             {parentName ? ` · ${parentName}` : ''}
           </p>
-          <h1 className="mt-1 font-serif text-2xl font-normal tracking-tight text-ink">
+          <h1 className="mt-1 font-serif text-[26px] leading-tight font-normal tracking-tight text-ink">
             {activeStage.subtitle}
           </h1>
-          <p className="mt-1.5 text-sm leading-relaxed text-muted">{activeStage.focusSummary}</p>
+          <p className="mt-1 text-sm leading-relaxed text-muted">{activeStage.focusSummary}</p>
           {isBeyondContent && (
             <p className="mt-1.5 text-xs text-sage">
               Content covers up to 3 years—showing 2–3 Years.
@@ -366,48 +391,63 @@ export function TodayView({
         </div>
       </header>
 
-      {/* Functional 3 AM Night Companion */}
+      {/* 3 AM Night Companion */}
       {night && (
         <section
           aria-label="Night Companion"
-          className="space-y-4 rounded-3xl bg-surface p-5 ring-1 ring-amber/20"
+          className="space-y-3.5 rounded-2xl bg-surface p-5 ring-1 ring-amber/25"
         >
-          <p className="text-xs tracking-widest uppercase text-amber">Night Companion</p>
-          <p className="font-serif text-lg leading-snug text-ink">
+          <p className="text-[11px] font-semibold tracking-widest uppercase text-amber">
+            Night Companion
+          </p>
+          <p className="font-serif text-[20px] leading-snug text-ink">
             Lights low. Voice slow. What helps right now?
           </p>
           <div className="grid grid-cols-2 gap-2.5">
             <button
               type="button"
               onClick={() => onOpenSos('baby', true)}
-              className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl bg-amber px-3 text-sm font-semibold text-on-amber transition active:scale-[0.98]"
+              className="flex h-12 items-center justify-center gap-2 rounded-xl bg-amber px-3 text-sm font-semibold whitespace-nowrap text-on-amber transition active:scale-[0.98]"
             >
-              <Moon aria-hidden="true" className="h-4 w-4" />
-              La Pause ({formatSeconds(activeStage.laPauseSeconds)})
+              <Moon aria-hidden="true" className="h-4 w-4 shrink-0" />
+              <span>La Pause ({formatSeconds(activeStage.laPauseSeconds)})</span>
             </button>
             <button
               type="button"
               onClick={() => onOpenSos('parent')}
-              className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl border border-line bg-elevated px-3 text-sm font-medium text-ink transition active:border-amber"
+              className="flex h-12 items-center justify-center gap-2 rounded-xl border border-line bg-elevated/85 px-3 text-sm font-medium whitespace-nowrap text-ink transition active:scale-[0.98] active:border-amber"
             >
-              <HeartHandshake aria-hidden="true" className="h-4 w-4 text-sage" />
-              Breathe
+              <HeartHandshake aria-hidden="true" className="h-4 w-4 shrink-0 text-sage" />
+              <span>Breathe</span>
             </button>
           </div>
         </section>
       )}
 
-      {/* Card 1: Daily Kid Practice */}
-      {kidPractice && (
+      {/* Deep night (11 PM – 6 AM): tuck daytime habits behind 1 tap */}
+      {deepNight && (
+        <button
+          type="button"
+          aria-expanded={showDaytimeAtNight}
+          onClick={() => setShowDaytimeAtNight((v) => !v)}
+          className="flex h-11 w-full items-center justify-between rounded-2xl border border-line bg-surface/80 px-4 text-xs font-medium text-muted transition active:scale-[0.99] active:text-ink"
+        >
+          <span className="inline-flex items-center gap-2">
+            <Sun aria-hidden="true" className="h-3.5 w-3.5 text-amber" />
+            <span>{showDaytimeAtNight ? 'Hide daytime practices' : 'Show daytime practices'}</span>
+          </span>
+          {showDaytimeAtNight ? (
+            <ChevronUp aria-hidden="true" className="h-4 w-4" />
+          ) : (
+            <ChevronDown aria-hidden="true" className="h-4 w-4" />
+          )}
+        </button>
+      )}
+
+      {showDailyCards && kidPractice && (
         <DailyPracticeCard
           ariaLabel="Today's Practice"
-          kicker={
-            night
-              ? 'For morning · Kid'
-              : babyName
-                ? `For ${babyName}`
-                : 'For Your Child'
-          }
+          kicker={babyName ? `For ${babyName}` : 'For Your Child'}
           accentTone="amber"
           practice={kidPractice}
           practiceIndex={kidPracticeIndex}
@@ -437,11 +477,10 @@ export function TodayView({
         />
       )}
 
-      {/* Card 2: Daily You & Marriage Habit */}
-      {couplePractice && (
+      {showDailyCards && couplePractice && (
         <DailyPracticeCard
           ariaLabel="For You and Your Marriage"
-          kicker="For You & Your Marriage"
+          kicker="You & Marriage"
           accentTone="sage"
           practice={couplePractice}
           practiceIndex={couplePracticeIndex}
@@ -474,16 +513,72 @@ export function TodayView({
         />
       )}
 
-      {/* Block 3: 1-Tap Parent Check-In */}
+      {/* 60-Second After-Work Bridge */}
+      {!night && (
+        <section
+          aria-label="After-Work Reset"
+          className="rounded-2xl bg-surface p-5 ring-1 ring-line"
+        >
+          <details open={afterWork ? true : undefined} className="group">
+            <summary className="flex min-h-[40px] cursor-pointer list-none items-center justify-between gap-2 select-none [&::-webkit-details-marker]:hidden">
+              <span className="flex items-center gap-2 font-serif text-[19px] font-normal text-ink">
+                <ChevronRight
+                  aria-hidden="true"
+                  className="h-4 w-4 shrink-0 text-amber transition-transform duration-200 group-open:rotate-90 motion-reduce:transition-none"
+                />
+                <Briefcase aria-hidden="true" className="h-4 w-4 shrink-0 text-amber" />
+                <span>After-Work Reset</span>
+              </span>
+              <span className="rounded-full border border-line/85 bg-elevated/85 px-2.5 py-1 text-[11px] font-medium whitespace-nowrap text-muted">
+                <span className="ui-pill-label">60s bridge</span>
+              </span>
+            </summary>
+
+            <div className="mt-3.5 space-y-3.5 border-t border-line/65 pt-3.5 text-sm leading-relaxed">
+              <p className="border-l-2 border-sage/55 pl-3.5 text-ink/90">
+                <span className="font-semibold text-sage">Drop career guilt: </span>
+                Focused adult work enriches your parenting—close the work tab cleanly before
+                stepping through the door.
+              </p>
+
+              {sighCue ? (
+                <p
+                  role="status"
+                  className="py-2 text-center font-serif text-base italic text-amber"
+                >
+                  {sighCue}
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setSighStep(0)}
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-amber/40 bg-amber/15 px-3 text-xs font-semibold text-amber transition active:scale-[0.98]"
+                >
+                  <Play aria-hidden="true" className="h-3.5 w-3.5" />
+                  <span>Start 2 Physiological Sighs (16s)</span>
+                </button>
+              )}
+
+              <p className="text-xs text-muted">
+                <span className="font-semibold text-ink">First 10 seconds inside: </span>
+                Greet your spouse warmly first (6-second kiss), then invite your child into one real
+                dinner task instead of entertaining.
+              </p>
+            </div>
+          </details>
+        </section>
+      )}
+
+      {/* 1-Tap Parent Check-In */}
       <section
         aria-label="Parent Check-In"
-        className="space-y-4 rounded-3xl bg-surface p-5 ring-1 ring-line"
+        className="space-y-3.5 rounded-2xl bg-surface p-5 ring-1 ring-line"
       >
-        <h2 className="font-serif text-lg font-normal text-ink">
+        <h2 className="font-serif text-[19px] font-normal text-ink">
           How are you holding up right now?
         </h2>
 
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-2">
           {MOOD_OPTIONS.map((option) => {
             const selected = mood === option.id;
             return (
@@ -492,10 +587,10 @@ export function TodayView({
                 type="button"
                 aria-pressed={selected}
                 onClick={() => setMood(option.id, dateKey)}
-                className={`min-h-[48px] rounded-2xl border px-3 text-sm font-medium transition active:scale-[0.98] ${
+                className={`h-11 rounded-xl border px-3 text-sm font-medium whitespace-nowrap transition active:scale-[0.98] ${
                   selected
                     ? 'border-amber/70 bg-amber/15 text-amber'
-                    : 'border-line bg-canvas/70 text-muted'
+                    : 'border-line bg-canvas/75 text-muted active:text-ink'
                 }`}
               >
                 {option.label}
@@ -511,7 +606,7 @@ export function TodayView({
               <button
                 type="button"
                 onClick={() => onOpenSos('parent')}
-                className="min-h-[48px] w-full rounded-2xl border border-amber/40 bg-amber/15 px-4 text-sm font-semibold text-amber transition active:scale-[0.98]"
+                className="h-11 w-full rounded-xl border border-amber/40 bg-amber/15 px-4 text-sm font-semibold text-amber transition active:scale-[0.98]"
               >
                 Open Reset &amp; Repair →
               </button>

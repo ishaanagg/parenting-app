@@ -26,6 +26,7 @@ import {
   SUPPORT_LINES_NOTE,
   TRIGGER_CHECK,
 } from '../../content/sos';
+import type { HowToCategoryId } from '../../domain/types';
 import { useActiveStage } from '../shared/useActiveStage';
 import { useDialog } from '../shared/useDialog';
 
@@ -35,6 +36,7 @@ type ParentTab = 'repair' | 'trigger' | 'support';
 interface SosOverlayProps {
   initialPath?: 'baby' | 'parent';
   autoStartTimer?: boolean;
+  onOpenHowTo?: (category: HowToCategoryId) => void;
   onClose: () => void;
 }
 
@@ -145,7 +147,7 @@ function BreathingPacer() {
   const expanded = started && isInhale;
 
   return (
-    <div className="flex flex-col items-center space-y-4 rounded-3xl bg-surface p-6 text-center ring-1 ring-line">
+    <div className="flex flex-col items-center space-y-4 rounded-2xl bg-surface p-5 text-center ring-1 ring-line">
       <div className="relative flex h-36 w-36 items-center justify-center">
         {/* Outer luminous halo */}
         <div
@@ -188,7 +190,12 @@ function BreathingPacer() {
   );
 }
 
-export function SosOverlay({ initialPath, autoStartTimer, onClose }: SosOverlayProps) {
+export function SosOverlay({
+  initialPath,
+  autoStartTimer,
+  onOpenHowTo,
+  onClose,
+}: SosOverlayProps) {
   const { activeStage } = useActiveStage();
   const [path, setPath] = useState<SosPath>(initialPath ?? 'triage');
   const [parentTab, setParentTab] = useState<ParentTab>('repair');
@@ -371,6 +378,17 @@ export function SosOverlay({ initialPath, autoStartTimer, onClose }: SosOverlayP
                   )}
                   <span className="text-right">{LA_PAUSE_ESCALATION.split('.')[0]}.</span>
                 </div>
+                {onOpenHowTo && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onOpenHowTo(activeStage.minWeeks >= 52 ? 'tantrums' : 'crying-gas')
+                    }
+                    className="min-h-[46px] w-full rounded-xl border border-sage/40 bg-sage/15 px-3 text-xs font-semibold text-sage transition active:scale-[0.98]"
+                  >
+                    Still crying? See step-by-step soothing holds →
+                  </button>
+                )}
               </div>
 
               <div className="space-y-2.5">
@@ -439,7 +457,7 @@ export function SosOverlay({ initialPath, autoStartTimer, onClose }: SosOverlayP
                     {REPAIR_SCRIPTS.map((script) => (
                       <div
                         key={script.id}
-                        className="space-y-2.5 rounded-3xl bg-surface p-5 ring-1 ring-line"
+                        className="space-y-2.5 rounded-2xl bg-surface p-5 ring-1 ring-line"
                       >
                         <p className="text-xs font-medium text-amber">{script.situation}</p>
                         <p className="border-l-2 border-amber/50 pl-3.5 font-serif text-[17px] italic leading-relaxed text-ink">

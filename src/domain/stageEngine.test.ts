@@ -1,16 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
   calculateAgeInWeeks,
-  filterWisdomCards,
+  filterHowToGuides,
   getDateKey,
   getParentDayKey,
+  getParentWeekKey,
   getStageForWeek,
+  isAfterWorkHours,
   isNightHours,
   parseIsoDate,
   pickDailyPractice,
   pruneDateRecord,
 } from './stageEngine';
-import type { PracticeRep, StageDefinition, WisdomCard } from './types';
+import type { HowToGuide, PracticeRep, StageDefinition } from './types';
 
 const TEST_STAGES: StageDefinition[] = [
   {
@@ -141,33 +143,38 @@ describe('pickDailyPractice', () => {
   });
 });
 
-describe('filterWisdomCards', () => {
-  const cards: WisdomCard[] = [
+describe('filterHowToGuides', () => {
+  const guides: HowToGuide[] = [
     {
-      id: 'c1',
+      id: 'g1',
       stages: ['0-6w'],
+      categories: ['sleep'],
       framework: 'le-cadre',
-      moments: ['3am', 'sleep'],
       title: 'La Pause',
-      insight: 'Wait briefly.',
-      tryNow: 'Count to 60.',
+      whenToUse: '3 AM grunts.',
+      quickSteps: ['Stop', 'Watch', 'Settle'],
+      whyItWorks: 'Active sleep.',
     },
     {
-      id: 'c2',
+      id: 'g2',
       stages: ['6-12w'],
+      categories: ['crying-gas'],
       framework: 'hgp',
-      moments: ['fussy'],
-      title: 'Togetherness',
-      insight: 'Step outside.',
-      tryNow: 'Walk for 5 min.',
+      title: 'Tiger Hold',
+      whenToUse: 'Evening witching hour.',
+      quickSteps: ['Drape', 'Sway', 'Shush'],
+      whyItWorks: 'Belly pressure.',
     },
   ];
 
-  it('filters by stage and moment', () => {
+  it('filters by stage and optional situation category', () => {
     expect(
-      filterWisdomCards({ stageId: '0-6w', moment: '3am', cards }).map((c) => c.id),
-    ).toEqual(['c1']);
-    expect(filterWisdomCards({ stageId: '0-6w', moment: 'fussy', cards })).toEqual([]);
+      filterHowToGuides({ stageId: '0-6w', category: 'all', guides }).map((g) => g.id),
+    ).toEqual(['g1']);
+    expect(
+      filterHowToGuides({ stageId: '0-6w', category: 'sleep', guides }).map((g) => g.id),
+    ).toEqual(['g1']);
+    expect(filterHowToGuides({ stageId: '0-6w', category: 'crying-gas', guides })).toEqual([]);
   });
 });
 
@@ -181,6 +188,15 @@ describe('date helpers', () => {
   it('keeps 3 AM in the previous parent day, rolls over at 4 AM', () => {
     expect(getParentDayKey(new Date(2026, 0, 6, 3, 0))).toBe('2026-01-05');
     expect(getParentDayKey(new Date(2026, 0, 6, 4, 0))).toBe('2026-01-06');
+  });
+
+  it('detects after-work transition hours and Monday-anchored ISO parent weeks', () => {
+    expect(isAfterWorkHours(new Date(2026, 10, 26, 17, 30))).toBe(true);
+    expect(isAfterWorkHours(new Date(2026, 10, 26, 10, 0))).toBe(false);
+    // Monday 2:00 AM still belongs to Sunday's week; Monday 9:00 AM starts the new week
+    expect(getParentWeekKey(new Date(2026, 10, 23, 2, 0))).not.toBe(
+      getParentWeekKey(new Date(2026, 10, 23, 9, 0)),
+    );
   });
 
   it('prunes date records older than the retention window', () => {

@@ -1,29 +1,38 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
-  Bookmark,
-  Check,
   ChevronRight,
   HeartHandshake,
   Moon,
-  Share2,
+  Search,
   ShieldCheck,
+  X,
 } from 'lucide-react';
-import { FRAMEWORK_LABELS } from '../../content/frameworks';
 import { HOW_TO_CATEGORY_LABELS, HOW_TO_GUIDES } from '../../content/howToGuides';
+import { PRACTICES } from '../../content/practices';
 import { filterHowToGuides, isNightHours } from '../../domain/stageEngine';
 import {
   HOW_TO_CATEGORIES,
   type BookFramework,
   type HowToCategoryId,
   type HowToGuide,
+  type PracticeRep,
 } from '../../domain/types';
 import { useAppStore } from '../../state/useAppStore';
 import { shareOrCopy } from '../shared/shareText';
 import { TopUtilityRow } from '../shared/TopUtilityRow';
+import {
+  BookmarkIconButton,
+  CardGuardrailBadge,
+  FilterChip,
+  PhilosophyTagButton,
+  ShareIconButton,
+} from '../shared/uiPrimitives';
 import { useActiveStage } from '../shared/useActiveStage';
 import { useNow } from '../shared/useNow';
 
 interface HowToViewProps {
+  initialCategory?: HowToCategoryId | null;
+  onConsumeInitialCategory?: () => void;
   onOpenStagePicker?: () => void;
   onOpenSos?: (initialPath?: 'baby' | 'parent', autoStartTimer?: boolean) => void;
   onOpenFramework?: (framework: BookFramework) => void;
@@ -31,7 +40,22 @@ interface HowToViewProps {
 
 type FilterId = HowToCategoryId | 'all' | 'saved';
 
+function matchesGuideQuery(guide: HowToGuide, q: string): boolean {
+  const haystack = [
+    guide.title,
+    guide.whenToUse,
+    ...guide.quickSteps,
+    guide.whyItWorks,
+    guide.sayOutLoud ?? '',
+  ]
+    .join(' ')
+    .toLowerCase();
+  return haystack.includes(q);
+}
+
 export function HowToView({
+  initialCategory,
+  onConsumeInitialCategory,
   onOpenStagePicker,
   onOpenSos,
   onOpenFramework,
@@ -42,9 +66,24 @@ export function HowToView({
   const toggleSavedCard = useAppStore((s) => s.toggleSavedCard);
 
   const [selectedFilter, setSelectedFilter] = useState<FilterId>(() =>
-    isNightHours(now) ? 'sleep' : 'all',
+    initialCategory ?? (isNightHours(now) ? 'sleep' : 'all'),
   );
+  const [query, setQuery] = useState('');
+  const [showOtherAgesMatches, setShowOtherAgesMatches] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (initialCategory) {
+      setSelectedFilter(initialCategory);
+      setQuery('');
+      onConsumeInitialCategory?.();
+    }
+  }, [initialCategory, onConsumeInitialCategory]);
+
+  const toggleExpanded = (id: string) => {
+    setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const stageGuides = useMemo(
     () => HOW_TO_GUIDES.filter((g) => g.stages.includes(activeStage.id)),
@@ -56,6 +95,13 @@ export function HowToView({
     [savedCardIds],
   );
 
+  const savedPractices = useMemo(
+    () => PRACTICES.filter((p) => savedCardIds.includes(p.id)),
+    [savedCardIds],
+  );
+
+  const totalSavedCount = savedHowToGuides.length + savedPractices.length;
+
   const availableCategories = useMemo(
     () =>
       HOW_TO_CATEGORIES.filter((cat) =>
@@ -66,33 +112,60 @@ export function HowToView({
 
   const filters = useMemo(() => {
     const items: { id: FilterId; label: string }[] = [{ id: 'all', label: 'All' }];
-    if (savedHowToGuides.length > 0) {
-      items.push({ id: 'saved', label: `Saved (${savedHowToGuides.length})` });
+    if (totalSavedCount > 0) {
+      items.push({ id: 'saved', label: `Saved (${totalSavedCount})` });
     }
     for (const cat of availableCategories) {
       items.push({ id: cat, label: HOW_TO_CATEGORY_LABELS[cat] });
     }
     return items;
-  }, [availableCategories, savedHowToGuides.length]);
+  }, [availableCategories, totalSavedCount]);
 
   const effectiveFilter: FilterId =
-    (selectedFilter === 'saved' && savedHowToGuides.length === 0) ||
+    (selectedFilter === 'saved' && totalSavedCount === 0) ||
     (selectedFilter !== 'all' &&
       selectedFilter !== 'saved' &&
       !availableCategories.includes(selectedFilter))
       ? 'all'
       : selectedFilter;
 
-  const visibleGuides =
-    effectiveFilter === 'saved'
-      ? savedHowToGuides
-      : filterHowToGuides({
-          stageId: activeStage.id,
-          category: effectiveFilter,
-          guides: HOW_TO_GUIDES,
-        });
+  const normalizedQuery = query.trim().toLowerCase();
 
-  const handleShare = (guide: HowToGuide) => {
+  const { visibleGuides, crossStageMatchesCount } = useMemo(() => {
+    if (normalizedQuery) {
+      const inStage = stageGuides.filter((g) => matchesGuideQuery(g, normalizedQuery));
+      const allAges = HOW_TO_GUIDES.filter((g) => matchesGuideQuery(g, normalizedQuery));
+      if (inStage.length === 0 && showOtherAgesMatches) {
+        return { visibleGuides: allAges, crossStageMatchesCount: 0 };
+      }
+      return {
+        visibleGuides: inStage,
+        crossStageMatchesCount: inStage.length === 0 ? allAges.length : 0,
+      };
+    }
+
+    if (effectiveFilter === 'saved') {
+      return { visibleGuides: savedHowToGuides, crossStageMatchesCount: 0 };
+    }
+
+    return {
+      visibleGuides: filterHowToGuides({
+        stageId: activeStage.id,
+        category: effectiveFilter,
+        guides: HOW_TO_GUIDES,
+      }),
+      crossStageMatchesCount: 0,
+    };
+  }, [
+    activeStage.id,
+    effectiveFilter,
+    normalizedQuery,
+    savedHowToGuides,
+    showOtherAgesMatches,
+    stageGuides,
+  ]);
+
+  const handleShareGuide = (guide: HowToGuide) => {
     const lines = [
       `${guide.title} (${activeStage.label})`,
       `When: ${guide.whenToUse}`,
@@ -114,122 +187,236 @@ export function HowToView({
     });
   };
 
+  const handleSharePractice = (practice: PracticeRep) => {
+    shareOrCopy(practice.title, practice.prompt).then((res) => {
+      if (res === 'copied') {
+        setCopiedId(practice.id);
+        window.setTimeout(() => setCopiedId(null), 1800);
+      }
+    });
+  };
+
   return (
-    <div className="animate-calm-in space-y-5">
+    <div className="animate-calm-in space-y-4">
       <header className="space-y-3">
         <TopUtilityRow onOpenStagePicker={onOpenStagePicker} onOpenSos={onOpenSos} />
         <div>
-          <p className="text-xs tracking-widest uppercase text-muted">
+          <p className="text-[11px] font-semibold tracking-widest uppercase text-muted">
             10-Sec Steps · 9 PM Debrief
           </p>
-          <h1 className="mt-1 font-serif text-2xl font-normal tracking-tight text-ink">
+          <h1 className="mt-1 font-serif text-[26px] leading-tight font-normal tracking-tight text-ink">
             How-To
           </h1>
-          <p className="mt-1 text-sm text-muted">
-            Fast steps on top for quick lookup; tap below for why it happens and exact scripts.
-          </p>
         </div>
       </header>
 
-      <div
-        role="group"
-        aria-label="Filter guides by situation"
-        className="no-scrollbar fade-right-mask -mx-5 flex gap-2 overflow-x-auto px-5 pr-10 pb-1"
-      >
-        {filters.map((filter) => {
-          const active = effectiveFilter === filter.id;
-          return (
+      {/* Instant Search across all guides */}
+      <search>
+        <div className="relative flex items-center">
+          <label htmlFor="howto-search" className="sr-only">
+            Search How-To guides
+          </label>
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3.5 h-4 w-4 text-muted"
+          />
+          <input
+            id="howto-search"
+            name="q"
+            type="search"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            enterKeyHint="search"
+            placeholder="Search colic, biting, gagging, bedtime..."
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setShowOtherAgesMatches(false);
+            }}
+            className="h-11 w-full rounded-xl border border-line bg-surface pr-10 pl-10 text-base text-ink placeholder:text-muted/65 focus:border-amber focus:outline-none"
+          />
+          {query && (
             <button
-              key={filter.id}
               type="button"
-              aria-pressed={active}
+              aria-label="Clear search"
+              onClick={() => {
+                setQuery('');
+                setShowOtherAgesMatches(false);
+              }}
+              className="absolute right-1.5 flex h-9 w-9 items-center justify-center rounded-full text-muted transition active:text-ink"
+            >
+              <X aria-hidden="true" className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      </search>
+
+      {/* Standardized 34px Capsule Filter Strip */}
+      {!normalizedQuery && (
+        <div
+          role="group"
+          aria-label="Filter guides by situation"
+          className="no-scrollbar fade-right-mask -mx-5 flex snap-x snap-proximity gap-2 overflow-x-auto px-5 py-1.5 pr-10"
+        >
+          {filters.map((filter) => (
+            <FilterChip
+              key={filter.id}
+              active={effectiveFilter === filter.id}
               onClick={() => setSelectedFilter(filter.id)}
-              className={`min-h-[44px] shrink-0 rounded-full border px-4 text-xs font-medium transition ${
-                active
-                  ? 'border-amber/70 bg-amber/15 text-amber'
-                  : 'border-line bg-surface text-muted'
-              }`}
             >
               {filter.label}
-            </button>
-          );
-        })}
-      </div>
+            </FilterChip>
+          ))}
+        </div>
+      )}
 
       <div className="space-y-4">
+        {/* Empty search fallback with 1-tap cross-stage reveal */}
+        {normalizedQuery && visibleGuides.length === 0 && (
+          <div className="space-y-3 rounded-2xl bg-surface p-5 text-sm text-muted ring-1 ring-line">
+            <p>
+              No How-To guides matching “<span className="text-ink">{query.trim()}</span>” in{' '}
+              {activeStage.label}.
+            </p>
+            {crossStageMatchesCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowOtherAgesMatches(true)}
+                className="h-11 rounded-xl border border-amber/40 bg-amber/15 px-4 text-xs font-semibold text-amber"
+              >
+                Show {crossStageMatchesCount} match{crossStageMatchesCount === 1 ? '' : 'es'} from
+                other ages
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Saved Daily Practices & Marriage Habits (Identical Card Grid & Footer!) */}
+        {!normalizedQuery && effectiveFilter === 'saved' && savedPractices.length > 0 && (
+          <div className="space-y-3">
+            <p className="text-[11px] font-semibold tracking-widest uppercase text-muted">
+              Saved Daily Practices ({savedPractices.length})
+            </p>
+            {savedPractices.map((practice) => {
+              const isWhyOpen = Boolean(expandedIds[practice.id]);
+              return (
+                <article
+                  key={practice.id}
+                  className="space-y-3.5 rounded-2xl bg-surface p-5 ring-1 ring-line"
+                >
+                  <div className="flex min-h-[26px] items-center justify-between gap-2.5">
+                    <span className="text-[11px] font-semibold tracking-widest uppercase text-sage">
+                      <span className="ui-pill-label">
+                        {practice.track === 'couple' ? 'Marriage & Self' : 'Daily Practice'}
+                      </span>
+                    </span>
+                    <PhilosophyTagButton
+                      framework={practice.framework}
+                      onOpenFramework={onOpenFramework}
+                    />
+                  </div>
+
+                  <h2 className="font-serif text-[20px] leading-snug font-normal text-ink">
+                    {practice.title}
+                  </h2>
+                  <p className="text-[15px] leading-relaxed text-ink/90">{practice.prompt}</p>
+
+                  {isWhyOpen && (
+                    <p
+                      id={`saved-why-${practice.id}`}
+                      className="border-l-2 border-line pl-3.5 text-sm leading-relaxed text-muted"
+                    >
+                      {practice.whyItWorks}
+                    </p>
+                  )}
+
+                  <footer className="flex items-center justify-between gap-3 border-t border-line/65 pt-3">
+                    <button
+                      type="button"
+                      aria-expanded={isWhyOpen}
+                      aria-controls={`saved-why-${practice.id}`}
+                      onClick={() => toggleExpanded(practice.id)}
+                      className="relative inline-flex h-9 items-center gap-1.5 text-xs font-medium text-muted transition active:text-ink after:absolute after:-inset-y-1 after:inset-x-0"
+                    >
+                      <ChevronRight
+                        aria-hidden="true"
+                        className={`h-3.5 w-3.5 shrink-0 text-amber transition-transform duration-200 motion-reduce:transition-none ${
+                          isWhyOpen ? 'rotate-90' : ''
+                        }`}
+                      />
+                      <span>Why this works</span>
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                      <BookmarkIconButton
+                        saved={true}
+                        label={`Remove bookmark for ${practice.title}`}
+                        onToggle={() => toggleSavedCard(practice.id)}
+                      />
+                      <ShareIconButton
+                        copied={copiedId === practice.id}
+                        label={`Share ${practice.title}`}
+                        onShare={() => handleSharePractice(practice)}
+                      />
+                    </div>
+                  </footer>
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        {!normalizedQuery &&
+          effectiveFilter === 'saved' &&
+          savedPractices.length > 0 &&
+          visibleGuides.length > 0 && (
+            <p className="pt-1 text-[11px] font-semibold tracking-widest uppercase text-muted">
+              Saved How-To Guides ({visibleGuides.length})
+            </p>
+          )}
+
+        {/* How-To Playbook Cards (Identical 20px Card Grid & True-Flex Footer) */}
         {visibleGuides.map((guide) => {
           const isSaved = savedCardIds.includes(guide.id);
+          const isExpanded = Boolean(expandedIds[guide.id]);
+          const regionId = `guide-why-${guide.id}`;
+
           return (
             <article
               key={guide.id}
-              className="space-y-3.5 rounded-3xl bg-surface p-5 ring-1 ring-line"
+              className="space-y-4 rounded-2xl bg-surface p-5 ring-1 ring-line"
             >
-              {/* Top Meta: Theme Pill + Optional Guardrail Badge + Bookmark + Share */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => onOpenFramework?.(guide.framework)}
-                    className="-my-2 inline-flex min-h-[44px] items-center"
-                  >
-                    <span className="rounded-full bg-elevated px-2.5 py-1 text-xs text-amber">
-                      {FRAMEWORK_LABELS[guide.framework]}
+              {/* Uniform 26px Top Row: Guardrail Badge / Kicker on left, Philosophy Capsule flush on right */}
+              <div className="flex min-h-[26px] items-center justify-between gap-2.5">
+                {guide.badge ? (
+                  <CardGuardrailBadge>{guide.badge}</CardGuardrailBadge>
+                ) : (
+                  <span className="min-w-0 truncate text-[11px] font-semibold tracking-wider uppercase text-muted">
+                    <span className="ui-pill-label">
+                      {HOW_TO_CATEGORY_LABELS[guide.categories[0]!]}
                     </span>
-                  </button>
-                  {guide.badge && (
-                    <span className="rounded-full border border-sage/35 bg-sage/10 px-2.5 py-0.5 text-[11px] font-medium text-sage">
-                      {guide.badge}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex shrink-0 items-center gap-0.5">
-                  <button
-                    type="button"
-                    aria-label={
-                      isSaved ? `Remove bookmark for ${guide.title}` : `Bookmark ${guide.title}`
-                    }
-                    aria-pressed={isSaved}
-                    onClick={() => toggleSavedCard(guide.id)}
-                    className="flex h-11 w-11 items-center justify-center rounded-full text-muted transition active:text-amber"
-                  >
-                    <Bookmark
-                      aria-hidden="true"
-                      className={`h-4 w-4 ${isSaved ? 'fill-amber text-amber' : ''}`}
-                    />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`Share ${guide.title}`}
-                    onClick={() => handleShare(guide)}
-                    className="flex h-11 w-11 items-center justify-center rounded-full text-muted transition active:text-ink"
-                  >
-                    {copiedId === guide.id ? (
-                      <Check aria-hidden="true" className="h-4 w-4 text-sage" />
-                    ) : (
-                      <Share2 aria-hidden="true" className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
+                  </span>
+                )}
+                <PhilosophyTagButton
+                  framework={guide.framework}
+                  onOpenFramework={onOpenFramework}
+                />
               </div>
 
-              {/* Title + When To Use */}
               <div>
-                <h2 className="font-serif text-xl leading-snug font-normal text-ink">
+                <h2 className="font-serif text-[20px] leading-snug font-normal text-ink">
                   {guide.title}
                 </h2>
-                <p className="mt-1 text-xs leading-relaxed text-muted">{guide.whenToUse}</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted">{guide.whenToUse}</p>
               </div>
 
-              {/* 10-Second Ordered Action Steps */}
-              <ol className="space-y-2 rounded-2xl bg-canvas/75 p-4 text-[15px] leading-relaxed text-ink/95">
+              <ol className="space-y-2.5 border-l-2 border-amber/40 pl-4 text-[15px] leading-relaxed text-ink/95">
                 {guide.quickSteps.map((step, index) => (
                   <li key={step} className="flex gap-2.5">
-                    <span
-                      aria-hidden="true"
-                      className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber/15 text-xs font-semibold tabular-nums text-amber"
-                    >
-                      {index + 1}
+                    <span aria-hidden="true" className="font-semibold tabular-nums text-amber">
+                      {index + 1}.
                     </span>
                     <span>{step}</span>
                   </li>
@@ -247,10 +434,10 @@ export function HowToView({
                 <button
                   type="button"
                   onClick={() => onOpenSos('baby', true)}
-                  className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-amber/40 bg-amber/15 px-3 text-xs font-semibold text-amber"
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-amber/40 bg-amber/15 px-3 text-xs font-semibold text-amber transition active:scale-[0.98]"
                 >
                   <Moon aria-hidden="true" className="h-3.5 w-3.5" />
-                  Open La Pause Timer →
+                  <span>Open La Pause Timer →</span>
                 </button>
               )}
 
@@ -258,32 +445,57 @@ export function HowToView({
                 <button
                   type="button"
                   onClick={() => onOpenSos('parent')}
-                  className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-sage/40 bg-sage/15 px-3 text-xs font-semibold text-sage"
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-sage/40 bg-sage/15 px-3 text-xs font-semibold text-sage transition active:scale-[0.98]"
                 >
                   <HeartHandshake aria-hidden="true" className="h-3.5 w-3.5" />
-                  Open Breathing &amp; Safe Pause →
+                  <span>Open Breathing &amp; Safe Pause →</span>
                 </button>
               )}
 
-              {/* Non-exclusive native <details> disclosure for 9 PM couch reading + find-in-page */}
-              <details className="group border-t border-line/70 pt-2">
-                <summary className="flex min-h-[44px] cursor-pointer list-none items-center gap-1.5 text-xs font-medium text-muted transition select-none active:text-ink [&::-webkit-details-marker]:hidden">
-                  <ChevronRight
-                    aria-hidden="true"
-                    className="h-3.5 w-3.5 shrink-0 text-amber transition-transform duration-200 group-open:rotate-90 motion-reduce:transition-none"
-                  />
-                  <span>{guide.sayOutLoud ? 'Why + Exact Script' : 'Why this works'}</span>
-                </summary>
-                <div className="space-y-2.5 pb-1 pl-5 text-sm leading-relaxed">
+              {isExpanded && (
+                <div id={regionId} className="space-y-3 text-sm leading-relaxed">
                   {guide.sayOutLoud && (
-                    <p className="rounded-xl border border-line bg-canvas p-3 italic text-ink">
-                      <span className="not-italic font-semibold text-sage">Say out loud: </span>
+                    <p className="border-l-2 border-amber/55 pl-3.5 font-serif text-[17px] italic leading-relaxed text-ink">
                       {guide.sayOutLoud}
                     </p>
                   )}
-                  <p className="text-muted">{guide.whyItWorks}</p>
+                  <p className="border-l-2 border-line pl-3.5 text-muted">{guide.whyItWorks}</p>
                 </div>
-              </details>
+              )}
+
+              {/* True Flexbox Footer: Zero absolute positioning, 100% aligned with TodayView */}
+              <footer className="flex items-center justify-between gap-3 border-t border-line/65 pt-3">
+                <button
+                  type="button"
+                  aria-expanded={isExpanded}
+                  aria-controls={regionId}
+                  onClick={() => toggleExpanded(guide.id)}
+                  className="relative inline-flex h-9 items-center gap-1.5 text-xs font-medium text-muted transition active:text-ink after:absolute after:-inset-y-1 after:inset-x-0"
+                >
+                  <ChevronRight
+                    aria-hidden="true"
+                    className={`h-3.5 w-3.5 shrink-0 text-amber transition-transform duration-200 motion-reduce:transition-none ${
+                      isExpanded ? 'rotate-90' : ''
+                    }`}
+                  />
+                  <span>{guide.sayOutLoud ? 'Why + Exact Script' : 'Why this works'}</span>
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <BookmarkIconButton
+                    saved={isSaved}
+                    label={
+                      isSaved ? `Remove bookmark for ${guide.title}` : `Bookmark ${guide.title}`
+                    }
+                    onToggle={() => toggleSavedCard(guide.id)}
+                  />
+                  <ShareIconButton
+                    copied={copiedId === guide.id}
+                    label={`Share ${guide.title}`}
+                    onShare={() => handleShareGuide(guide)}
+                  />
+                </div>
+              </footer>
             </article>
           );
         })}

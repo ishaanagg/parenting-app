@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
-import { BookOpen, CalendarRange, Sun } from 'lucide-react';
-import type { BookFramework } from '../../domain/types';
+import { BookOpen, CalendarRange, Sun, Users } from 'lucide-react';
+import type { BookFramework, HowToCategoryId } from '../../domain/types';
 import { ByAgeView } from '../by-age/ByAgeView';
 import { HowToView } from '../how-to/HowToView';
+import { ParentsView } from '../parents/ParentsView';
 import { FrameworkSheet } from '../shared/FrameworkSheet';
 import { SosOverlay } from '../sos/SosOverlay';
 import { TodayView } from '../today/TodayView';
 import { SettingsSheet } from './SettingsSheet';
 
-type TabId = 'today' | 'how-to' | 'by-age';
+type TabId = 'today' | 'how-to' | 'by-age' | 'parents';
 type OverlayKind = 'sos' | 'settings' | 'framework' | null;
 
 interface AnchorHistoryState {
@@ -34,6 +35,7 @@ export function AppShell() {
   }>({ open: false });
   const [stagePickerOpen, setStagePickerOpen] = useState(false);
   const [activeFramework, setActiveFramework] = useState<BookFramework | null>(null);
+  const [howToJumpCategory, setHowToJumpCategory] = useState<HowToCategoryId | null>(null);
 
   const pushNavState = useCallback((tab: TabId, overlay: OverlayKind) => {
     try {
@@ -125,6 +127,8 @@ export function AppShell() {
         )}
         {activeTab === 'how-to' && (
           <HowToView
+            initialCategory={howToJumpCategory}
+            onConsumeInitialCategory={() => setHowToJumpCategory(null)}
             onOpenStagePicker={handleOpenSettings}
             onOpenSos={handleOpenSos}
             onOpenFramework={handleOpenFramework}
@@ -137,55 +141,55 @@ export function AppShell() {
             onOpenFramework={handleOpenFramework}
           />
         )}
+        {activeTab === 'parents' && (
+          <ParentsView
+            onOpenStagePicker={handleOpenSettings}
+            onOpenSos={handleOpenSos}
+            onOpenFramework={handleOpenFramework}
+          />
+        )}
       </main>
 
-      {/* Bottom Thumb-Zone Navigation (Peacetime-First) */}
+      {/* Native-Standard Bottom Tab Bar (iOS HIG / Material 3 Indicator Pill) */}
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-canvas/95 backdrop-blur-md"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-line/85 bg-surface/92 backdrop-blur-xl"
       >
-        <div className="mx-auto flex max-w-md items-center gap-2 px-4 py-2 pb-[max(0.625rem,env(safe-area-inset-bottom))]">
-          <button
-            type="button"
-            aria-current={activeTab === 'today' ? 'page' : undefined}
-            onClick={() => handleSelectTab('today')}
-            className={`flex min-h-[50px] flex-1 flex-col items-center justify-center gap-1 rounded-xl text-xs transition ${
-              activeTab === 'today'
-                ? 'bg-elevated font-semibold text-amber ring-1 ring-amber/30'
-                : 'font-medium text-muted'
-            }`}
-          >
-            <Sun aria-hidden="true" className="h-4 w-4" />
-            Today
-          </button>
-
-          <button
-            type="button"
-            aria-current={activeTab === 'how-to' ? 'page' : undefined}
-            onClick={() => handleSelectTab('how-to')}
-            className={`flex min-h-[50px] flex-1 flex-col items-center justify-center gap-1 rounded-xl text-xs transition ${
-              activeTab === 'how-to'
-                ? 'bg-elevated font-semibold text-amber ring-1 ring-amber/30'
-                : 'font-medium text-muted'
-            }`}
-          >
-            <BookOpen aria-hidden="true" className="h-4 w-4" />
-            How-To
-          </button>
-
-          <button
-            type="button"
-            aria-current={activeTab === 'by-age' ? 'page' : undefined}
-            onClick={() => handleSelectTab('by-age')}
-            className={`flex min-h-[50px] flex-1 flex-col items-center justify-center gap-1 rounded-xl text-xs transition ${
-              activeTab === 'by-age'
-                ? 'bg-elevated font-semibold text-amber ring-1 ring-amber/30'
-                : 'font-medium text-muted'
-            }`}
-          >
-            <CalendarRange aria-hidden="true" className="h-4 w-4" />
-            By Age
-          </button>
+        <div className="mx-auto grid max-w-md grid-cols-4 gap-1 px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          {(
+            [
+              { id: 'today', label: 'Today', Icon: Sun },
+              { id: 'how-to', label: 'How-To', Icon: BookOpen },
+              { id: 'by-age', label: 'By Age', Icon: CalendarRange },
+              { id: 'parents', label: 'Parents', Icon: Users },
+            ] as const
+          ).map(({ id, label, Icon }) => {
+            const active = activeTab === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                aria-current={active ? 'page' : undefined}
+                onClick={() => handleSelectTab(id)}
+                className={`flex min-h-[50px] flex-col items-center justify-center gap-1 rounded-xl text-[11px] leading-none font-medium whitespace-nowrap transition active:scale-[0.97] ${
+                  active ? 'text-amber' : 'text-muted active:text-ink'
+                }`}
+              >
+                <span
+                  className={`flex h-7 w-12 items-center justify-center rounded-full transition-colors ${
+                    active ? 'bg-amber/16 text-amber' : 'text-current'
+                  }`}
+                >
+                  <Icon
+                    aria-hidden="true"
+                    strokeWidth={active ? 2.2 : 1.85}
+                    className="h-[19px] w-[19px]"
+                  />
+                </span>
+                <span className="ui-pill-label">{label}</span>
+              </button>
+            );
+          })}
         </div>
       </nav>
 
@@ -206,6 +210,12 @@ export function AppShell() {
         <SosOverlay
           initialPath={sosState.initialPath}
           autoStartTimer={sosState.autoStartTimer}
+          onOpenHowTo={(category) => {
+            setSosState({ open: false });
+            setHowToJumpCategory(category);
+            setActiveTab('how-to');
+            pushNavState('how-to', null);
+          }}
           onClose={() => closeOverlay('sos', () => setSosState({ open: false }))}
         />
       )}

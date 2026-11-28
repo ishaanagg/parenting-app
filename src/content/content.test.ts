@@ -1,21 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { filterWisdomCards } from '../domain/stageEngine';
-import { STAGE_IDS, type BookFramework, type MomentTag } from '../domain/types';
+import { STAGE_IDS, type BookFramework } from '../domain/types';
 import { AGE_GUIDES } from './ageGuides';
 import { FRAMEWORK_GUIDES, FRAMEWORK_LABELS } from './frameworks';
 import { HOW_TO_GUIDES } from './howToGuides';
+import { COUPLE_CHECKIN_PROMPTS, HOUSE_RULE_PRESETS } from './parentsContent';
 import { PRACTICES } from './practices';
 import { STAGES } from './stages';
-import { WISDOM_CARDS } from './wisdom';
-
-const BASE_MOMENTS: MomentTag[] = [
-  '3am',
-  'fussy',
-  'sleep',
-  'feeding',
-  'triggers',
-  'repair',
-];
 
 describe('content packs integrity (0–3y)', () => {
   it('defines every StageId in STAGES with contiguous week boundaries up to 3 years', () => {
@@ -51,20 +41,6 @@ describe('content packs integrity (0–3y)', () => {
     }
   });
 
-  it('provides at least 1 wisdom card for every stage + applicable moment combination', () => {
-    for (const stage of STAGES) {
-      const moments: MomentTag[] =
-        stage.minWeeks >= 26 ? [...BASE_MOMENTS, 'boundaries'] : BASE_MOMENTS;
-      for (const moment of moments) {
-        const cards = filterWisdomCards({ stageId: stage.id, moment, cards: WISDOM_CARDS });
-        expect(
-          cards.length,
-          `Missing wisdom card for stage=${stage.id} moment=${moment}`,
-        ).toBeGreaterThanOrEqual(1);
-      }
-    }
-  });
-
   it('provides a complete 5-card, 3-bullet By Age cheat sheet for every stage', () => {
     for (const stageId of STAGE_IDS) {
       const guide = AGE_GUIDES[stageId];
@@ -86,6 +62,14 @@ describe('content packs integrity (0–3y)', () => {
     for (const stageId of STAGE_IDS) {
       const stageGuides = HOW_TO_GUIDES.filter((g) => g.stages.includes(stageId));
       expect(stageGuides.length, `Stage ${stageId} How-To guides`).toBeGreaterThanOrEqual(6);
+    }
+  });
+
+  it('provides stage-matched House Rule presets and weekly Couple Check-In prompts', () => {
+    expect(COUPLE_CHECKIN_PROMPTS.length).toBeGreaterThanOrEqual(5);
+    for (const stageId of STAGE_IDS) {
+      const rules = HOUSE_RULE_PRESETS.filter((r) => r.stages.includes(stageId));
+      expect(rules.length, `Stage ${stageId} house rules`).toBeGreaterThanOrEqual(3);
     }
   });
 });

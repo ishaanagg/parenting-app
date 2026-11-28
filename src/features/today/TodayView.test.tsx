@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAppStore } from '../../state/useAppStore';
 import { TodayView } from './TodayView';
 
@@ -13,8 +13,14 @@ const getCouplePracticeTitle = () =>
 
 describe('TodayView', () => {
   beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date(2026, 10, 26, 14, 0)); // Deterministic 2:00 PM baseline
     useAppStore.getState().resetProfile();
     useAppStore.getState().completeOnboardingWithStage('0-6w');
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('renders both daily cards (Kid + Marriage) and supports undoable toggles, bookmarks, and share', async () => {
@@ -68,25 +74,33 @@ describe('TodayView', () => {
     errorSpy.mockRestore();
   });
 
-  it('rotates kid and marriage cards independently when tapping "Another"', () => {
+  it('rotates kid and marriage cards independently from 1/N when tapping "Another"', () => {
     render(<TodayView onOpenStagePicker={vi.fn()} onOpenSos={vi.fn()} />);
     const firstKid = getKidPracticeTitle();
     const firstCouple = getCouplePracticeTitle();
 
-    fireEvent.click(screen.getByRole('button', { name: /Mark practiced/i }));
     const anotherKid = screen.getByRole('button', { name: /Another kid practice/i });
+    const anotherCouple = screen.getByRole('button', { name: /Another marriage habit/i });
+
+    // Both counters always start at 1/N on first open of the day
+    expect(anotherKid).toHaveTextContent(/1\/\d+/);
+    expect(anotherCouple).toHaveTextContent(/1\/\d+/);
+
+    fireEvent.click(screen.getByRole('button', { name: /Mark practiced/i }));
     fireEvent.click(anotherKid);
 
     const secondKid = getKidPracticeTitle();
     expect(secondKid).not.toBe(firstKid);
-    // Marriage card stays untouched when rotating kid card
+    expect(anotherKid).toHaveTextContent(/2\/\d+/);
+    // Marriage card stays untouched at 1/N when rotating kid card
     expect(getCouplePracticeTitle()).toBe(firstCouple);
+    expect(anotherCouple).toHaveTextContent(/1\/\d+/);
     expect(screen.getByText(/already did one today/i)).toBeInTheDocument();
 
-    // Rotate marriage card independently
-    const anotherCouple = screen.getByRole('button', { name: /Another marriage habit/i });
+    // Rotate marriage card independently -> 2/N
     fireEvent.click(anotherCouple);
     expect(getCouplePracticeTitle()).not.toBe(firstCouple);
+    expect(anotherCouple).toHaveTextContent(/2\/\d+/);
     expect(getKidPracticeTitle()).toBe(secondKid);
   });
 
@@ -111,5 +125,29 @@ describe('TodayView', () => {
     useAppStore.getState().setManualStage('0-6w');
     render(<TodayView onOpenStagePicker={vi.fn()} onOpenSos={vi.fn()} />);
     expect(screen.getByText(/Browsing · return/i)).toBeInTheDocument();
+  });
+
+  it('auto-opens the 60-second After-Work Reset during 5:30 PM transition hours', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 10, 26, 17, 30)); // 5:30 PM
+    render(<TodayView onOpenStagePicker={vi.fn()} onOpenSos={vi.fn()} />);
+
+    const resetSection = screen.getByRole('region', { name: /After-Work Reset/i });
+    expect(resetSection.querySelector('details')).toHaveAttribute('open');
+    fireEvent.click(screen.getByRole('button', { name: /Start 2 Physiological Sighs/i }));
+    expect(screen.getByText(/Sigh 1\/2/i)).toBeInTheDocument();
+  });
+
+  it('tucks daytime cards behind 1 tap during deep night (2:30 AM) while keeping Night Companion primary', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 10, 26, 2, 30)); // 2:30 AM
+    render(<TodayView onOpenStagePicker={vi.fn()} onOpenSos={vi.fn()} />);
+
+    expect(screen.getByRole('region', { name: /Night Companion/i })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: /Today's Practice/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Show daytime practices/i }));
+    expect(screen.getByRole('region', { name: /Today's Practice/i })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /For You and Your Marriage/i })).toBeInTheDocument();
   });
 });

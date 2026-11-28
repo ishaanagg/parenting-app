@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react';
 import {
-  Check,
   CheckCircle2,
   Home,
   Moon,
-  Share2,
   Shield,
   Sparkles,
 } from 'lucide-react';
 import { AGE_GUIDES } from '../../content/ageGuides';
-import { FRAMEWORK_LABELS } from '../../content/frameworks';
 import { STAGES } from '../../content/stages';
 import type { AgeGuideSectionId, BookFramework, StageId } from '../../domain/types';
 import { useAppStore } from '../../state/useAppStore';
 import { shareOrCopy } from '../shared/shareText';
 import { TopUtilityRow } from '../shared/TopUtilityRow';
+import {
+  FilterChip,
+  PhilosophyTagButton,
+  ShareIconButton,
+} from '../shared/uiPrimitives';
 import { useActiveStage } from '../shared/useActiveStage';
 
 interface ByAgeViewProps {
@@ -23,12 +25,15 @@ interface ByAgeViewProps {
   onOpenFramework?: (framework: BookFramework) => void;
 }
 
-const SECTION_ICONS: Record<AgeGuideSectionId, typeof Sparkles> = {
-  developing: Sparkles,
-  rhythm: Moon,
-  'yes-space': Home,
-  grit: Shield,
-  'dont-stress': CheckCircle2,
+const SECTION_META: Record<
+  AgeGuideSectionId,
+  { Icon: typeof Sparkles; kicker: string }
+> = {
+  developing: { Icon: Sparkles, kicker: 'Development' },
+  rhythm: { Icon: Moon, kicker: 'Sleep & Rhythm' },
+  'yes-space': { Icon: Home, kicker: 'Environment' },
+  grit: { Icon: Shield, kicker: 'Character & Grit' },
+  'dont-stress': { Icon: CheckCircle2, kicker: 'Reassurance' },
 };
 
 export function ByAgeView({
@@ -41,7 +46,6 @@ export function ByAgeView({
   const [selectedStageId, setSelectedStageId] = useState<StageId>(activeStage.id);
   const [copied, setCopied] = useState(false);
 
-  // Sync local preview whenever the user changes their baby's active stage in Settings
   useEffect(() => {
     setSelectedStageId(activeStage.id);
   }, [activeStage.id]);
@@ -68,87 +72,75 @@ export function ByAgeView({
   };
 
   return (
-    <div className="animate-calm-in space-y-5">
+    <div className="animate-calm-in space-y-4">
       <header className="space-y-3">
         <TopUtilityRow onOpenStagePicker={onOpenStagePicker} onOpenSos={onOpenSos} />
         <div>
-          <p className="text-xs tracking-widest uppercase text-muted">3-Minute Cheat Sheet</p>
-          <h1 className="mt-1 font-serif text-2xl font-normal tracking-tight text-ink">
+          <p className="text-[11px] font-semibold tracking-widest uppercase text-muted">
+            3-Minute Cheat Sheet
+          </p>
+          <h1 className="mt-1 font-serif text-[26px] leading-tight font-normal tracking-tight text-ink">
             By Age
           </h1>
         </div>
       </header>
 
-      {/* Stage Strip: Instant peek ahead or behind without losing your baby's saved stage */}
+      {/* Standardized 34px Capsule Stage Strip */}
       <div
         role="group"
         aria-label="Browse cheat sheets by age"
-        className="no-scrollbar fade-right-mask -mx-5 flex gap-2 overflow-x-auto px-5 pr-10 pb-1"
+        className="no-scrollbar fade-right-mask -mx-5 flex snap-x snap-proximity gap-2 overflow-x-auto px-5 py-1.5 pr-10"
       >
         {STAGES.map((stage) => {
           const selected = viewedStage.id === stage.id;
           const isHomeStage = activeStage.id === stage.id;
           return (
-            <button
+            <FilterChip
               key={stage.id}
-              type="button"
-              aria-pressed={selected}
+              active={selected}
               onClick={() => setSelectedStageId(stage.id)}
-              className={`min-h-[44px] shrink-0 rounded-full border px-3.5 text-xs font-medium transition ${
-                selected
-                  ? 'border-amber/70 bg-amber/15 text-amber'
-                  : 'border-line bg-surface text-muted'
-              }`}
             >
               {stage.label}
               {isHomeStage ? ' · Now' : ''}
-            </button>
+            </FilterChip>
           );
         })}
       </div>
 
       {isPeekingOtherStage && (
-        <div className="flex items-center justify-between gap-2 rounded-2xl border border-line bg-surface/70 px-4 py-2.5 text-xs text-muted">
+        <div className="flex items-center justify-between gap-2 rounded-2xl border border-line bg-surface/80 px-4 py-2.5 text-xs text-muted">
           <span>
             Previewing <span className="font-medium text-ink">{viewedStage.label}</span>
           </span>
           <button
             type="button"
             onClick={() => setSelectedStageId(activeStage.id)}
-            className="min-h-[36px] font-medium text-amber"
+            className="relative min-h-[36px] font-medium whitespace-nowrap text-amber after:absolute after:-inset-y-1 after:inset-x-0"
           >
             Back to {babyName ? `${babyName} (${activeStage.label})` : activeStage.label}
           </button>
         </div>
       )}
 
-      {/* Stage Overview + Key Shift + 1-Tap Spouse Share */}
+      {/* Stage Overview + Key Shift + Standardized 36px Share Circle */}
       <section
         aria-label={`${viewedStage.label} overview`}
-        className="space-y-3.5 rounded-3xl bg-surface p-5 ring-1 ring-amber/20"
+        className="space-y-3.5 rounded-2xl bg-surface p-5 ring-1 ring-amber/25"
       >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-medium tracking-wider uppercase text-amber">
-              {viewedStage.label} · {viewedStage.subtitle}
-            </p>
-            <h2 className="mt-1 font-serif text-xl leading-snug font-normal text-ink">
-              {guide.headline}
-            </h2>
-          </div>
-          <button
-            type="button"
-            aria-label={`Share ${viewedStage.label} cheat sheet`}
-            onClick={handleShareGuide}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-elevated text-muted transition active:text-ink"
-          >
-            {copied ? (
-              <Check aria-hidden="true" className="h-4 w-4 text-sage" />
-            ) : (
-              <Share2 aria-hidden="true" className="h-4 w-4" />
-            )}
-          </button>
+        <div className="flex min-h-[36px] items-center justify-between gap-3">
+          <p className="min-w-0 truncate text-[11px] font-semibold tracking-wider uppercase text-amber">
+            {viewedStage.label} · {viewedStage.subtitle}
+          </p>
+          <ShareIconButton
+            copied={copied}
+            label={`Share ${viewedStage.label} cheat sheet`}
+            onShare={handleShareGuide}
+          />
         </div>
+
+        <h2 className="font-serif text-[20px] leading-snug font-normal text-ink">
+          {guide.headline}
+        </h2>
 
         <p className="border-l-2 border-amber/60 pl-3.5 text-sm leading-relaxed text-ink/90">
           <span className="font-semibold text-amber">Big shift here: </span>
@@ -156,34 +148,34 @@ export function ByAgeView({
         </p>
       </section>
 
-      {/* 5 Bite-Sized Cards (Strictly 3 Bullets Each) */}
+      {/* 5 Domain Cards: Identical 26px Top Metadata Row + Full-Width Heading */}
       <div className="space-y-4">
         {guide.sections.map((section) => {
-          const Icon = SECTION_ICONS[section.id];
+          const { Icon, kicker } = SECTION_META[section.id];
           const isDontStress = section.id === 'dont-stress';
           return (
             <article
               key={section.id}
-              className="space-y-3 rounded-3xl bg-surface p-5 ring-1 ring-line"
+              className="space-y-3 rounded-2xl bg-surface p-5 ring-1 ring-line"
             >
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="flex items-center gap-2 text-base font-semibold text-ink">
-                  <Icon
-                    aria-hidden="true"
-                    className={`h-4 w-4 shrink-0 ${isDontStress ? 'text-sage' : 'text-amber'}`}
-                  />
-                  <span>{section.title}</span>
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => onOpenFramework?.(section.framework)}
-                  className="-my-2 inline-flex min-h-[44px] shrink-0 items-center"
+              <div className="flex min-h-[26px] items-center justify-between gap-2.5">
+                <span
+                  className={`inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-widest uppercase ${
+                    isDontStress ? 'text-sage' : 'text-amber'
+                  }`}
                 >
-                  <span className="rounded-full bg-elevated px-2.5 py-1 text-xs text-muted transition active:text-ink">
-                    {FRAMEWORK_LABELS[section.framework]}
-                  </span>
-                </button>
+                  <Icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+                  <span className="ui-pill-label">{kicker}</span>
+                </span>
+                <PhilosophyTagButton
+                  framework={section.framework}
+                  onOpenFramework={onOpenFramework}
+                />
               </div>
+
+              <h2 className="font-serif text-[20px] leading-snug font-normal text-ink">
+                {section.title}
+              </h2>
 
               <ul className="space-y-2.5 text-[15px] leading-relaxed text-ink/90">
                 {section.bullets.map((bullet) => (

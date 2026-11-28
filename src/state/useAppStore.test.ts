@@ -65,6 +65,7 @@ describe('useAppStore', () => {
     expect(migrated).toEqual({
       hasCompletedOnboarding: true,
       parentName: '',
+      partnerName: '',
       babyName: '',
       babyDob: '2026-09-15',
       manualStageOverride: null,
@@ -74,15 +75,25 @@ describe('useAppStore', () => {
       anotherCountByDate: { '2026-11-20': 2 },
       coupleAnotherCountByDate: {},
       moodByDate: {},
+      pinnedHouseRuleIds: [],
+      customHouseRules: [],
+      couplePromptOffset: 0,
+      coupleCheckInByWeek: {},
+      personalTimeByWeek: {},
     });
   });
 
   it('exports and restores a full backup safely and rejects invalid JSON', () => {
     const store = useAppStore.getState();
     store.setParentName('Ishaan');
+    store.setPartnerName('Priya');
     store.setBabyName('Aarav');
     store.setBabyDob('2026-10-01');
     store.markPracticed('rep-1', '2026-11-25');
+    store.togglePinnedHouseRule('rule-code-yellow');
+    store.addCustomHouseRule('Phones parked at dinner');
+    store.toggleCoupleCheckIn('2026-W48');
+    store.togglePersonalTimeChip('self', 'workout', '2026-W48');
 
     const json = createBackupJson(useAppStore.getState());
     store.resetProfile();
@@ -91,9 +102,14 @@ describe('useAppStore', () => {
     const restored = useAppStore.getState().restoreFromBackup(json);
     expect(restored.ok).toBe(true);
     expect(useAppStore.getState().parentName).toBe('Ishaan');
+    expect(useAppStore.getState().partnerName).toBe('Priya');
     expect(useAppStore.getState().babyName).toBe('Aarav');
     expect(useAppStore.getState().babyDob).toBe('2026-10-01');
     expect(useAppStore.getState().practicedByDate['2026-11-25']).toEqual(['rep-1']);
+    expect(useAppStore.getState().pinnedHouseRuleIds).toEqual(['rule-code-yellow']);
+    expect(useAppStore.getState().customHouseRules).toEqual(['Phones parked at dinner']);
+    expect(useAppStore.getState().coupleCheckInByWeek['2026-W48']).toBe(true);
+    expect(useAppStore.getState().personalTimeByWeek['2026-W48']?.self).toEqual(['workout']);
 
     expect(parseBackupJson('{bad json').ok).toBe(false);
     expect(parseBackupJson('{"hello":"world"}').ok).toBe(false);

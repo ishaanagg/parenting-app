@@ -82,9 +82,16 @@ describe('SosOverlay', () => {
     expect(screen.getByText('1:00')).toBeInTheDocument();
   });
 
-  it('closes on Escape', () => {
+  it('closes on Escape and bridges La Pause directly to soothing holds when requested', () => {
     const onClose = vi.fn();
-    render(<SosOverlay onClose={onClose} />);
+    const onOpenHowTo = vi.fn();
+    render(<SosOverlay initialPath="baby" onOpenHowTo={onOpenHowTo} onClose={onClose} />);
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /Still crying\? See step-by-step soothing holds/i }),
+    );
+    expect(onOpenHowTo).toHaveBeenCalledWith('crying-gas');
+
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledTimes(1);
   });

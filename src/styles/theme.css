@@ -44,6 +44,10 @@ html[data-theme="day"] {
   --theme-glow: rgba(184, 107, 53, 0.07);
 }
 
+html {
+  scroll-padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+}
+
 html,
 body {
   background-color: var(--color-canvas);
@@ -51,7 +55,30 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: contain;
+  overflow-wrap: break-word;
   transition: background-color 220ms ease, color 220ms ease;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
+/* Optical vertical centering inside pills, chips, and badges */
+.ui-pill-label {
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+}
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-amber);
+  outline-offset: 2px;
 }
 
 .bg-nursery-glow {
@@ -96,6 +123,6 @@ body {
 }
 
 .fade-right-mask {
-  -webkit-mask-image: linear-gradient(to right, black 86%, transparent 100%);
-  mask-image: linear-gradient(to right, black 86%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 88%, transparent 100%);
+  mask-image: linear-gradient(to right, black 88%, transparent 100%);
 }

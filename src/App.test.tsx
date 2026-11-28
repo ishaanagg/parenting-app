@@ -1,12 +1,18 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 import { useAppStore } from './state/useAppStore';
 
 describe('App full-journey integration', () => {
   beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date(2026, 10, 26, 14, 0)); // Deterministic 2:00 PM baseline
     useAppStore.getState().resetProfile();
     document.documentElement.removeAttribute('data-theme');
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('allows 3 AM emergency SOS directly from onboarding before DOB is entered', () => {
@@ -83,10 +89,26 @@ describe('App full-journey integration', () => {
     expect(screen.getByText(/Good Inside/i)).toBeInTheDocument();
     fireEvent.keyDown(document, { key: 'Escape' });
 
-    // 5. Open Calm / 3 AM support overlay from the persistent top header pill
+    // 4b. Navigate to Parents tab and verify Weekly Check-In, House Rules, and Personal Time
+    fireEvent.click(screen.getByRole('button', { name: /^Parents$/i }));
+    expect(screen.getByRole('heading', { name: /^Parents$/i })).toBeInTheDocument();
+    expect(screen.getByText(/5-Min Weekly Check-In/i)).toBeInTheDocument();
+    expect(screen.getByText(/Our House Rules/i)).toBeInTheDocument();
+    expect(screen.getByText(/This Week’s Personal Time/i)).toBeInTheDocument();
+
+    // 5. Open Calm / 3 AM support overlay from the persistent top header pill and bridge to How-To soothing holds
     fireEvent.click(
       screen.getByRole('button', { name: /Calm timer and reset|3 AM calm support and timer/i }),
     );
     expect(screen.getByRole('dialog', { name: /Take one slow breath/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Baby is crying \/ 3 AM wake-up/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /Still crying\? See step-by-step soothing holds/i }),
+    );
+    expect(screen.getByRole('heading', { name: /^How-To$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Crying & Gas' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 });
